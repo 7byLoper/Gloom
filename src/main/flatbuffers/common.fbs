@@ -1,0 +1,27 @@
+namespace ru.gloom.protocol.flatbuffers;
+
+table RotationFramePayload {
+  deltaYaw:float;
+  deltaPitch:float;
+  accelYaw:float;
+  accelPitch:float;
+  jerkYaw:float;
+  jerkPitch:float;
+  gcdErrorYaw:float;
+  gcdErrorPitch:float;
+}
+
+// Feature order used by /v2/inference. AnalyzeRequest keeps a compact flat
+// float vector on the wire; this table documents the per-frame contract.
+table TargetAimFramePayloadV2 {
+  deltaYaw:float;
+  deltaPitch:float;
+  accelYaw:float;
+  accelPitch:float;
+  targetErrorYawNorm:float;
+  targetErrorPitchNorm:float;
+  targetErrorDeltaYaw:float;
+  targetErrorDeltaPitch:float;
+  targetDistance:float;
+  ticksSinceAttack:float;
+}

@@ -1,0 +1,11 @@
+name: GloomAI
+main: ru.gloom.GloomAI
+
+version: '${version}'
+api-version: '1.16'
+
+depend:
+  - packetevents
+
+softdepend:
+  - WorldGuard

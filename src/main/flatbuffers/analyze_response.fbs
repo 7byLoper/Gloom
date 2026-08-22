@@ -1,0 +1,8 @@
+namespace ru.gloom.protocol.flatbuffers;
+
+table AnalyzeResponse {
+  probability:double;
+}
+
+root_type AnalyzeResponse;
+file_identifier "GAIR";

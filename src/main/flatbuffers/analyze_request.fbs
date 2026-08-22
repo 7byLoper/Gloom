@@ -1,0 +1,10 @@
+namespace ru.gloom.protocol.flatbuffers;
+
+table AnalyzeRequest {
+  name:string (required);
+  count:uint;
+  features:[float] (required);
+}
+
+root_type AnalyzeRequest;
+file_identifier "GAIQ";
