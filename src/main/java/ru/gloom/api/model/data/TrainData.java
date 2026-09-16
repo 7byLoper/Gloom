@@ -25,9 +25,9 @@ public class TrainData {
     private final UUID playerUuid;
     private final String playerName;
     private UploadService uploadService;
-    private DatasetType datasetType;
+    private volatile DatasetType datasetType;
 
-    private boolean isDatasetsCollecting = false;
+    private volatile boolean isDatasetsCollecting = false;
     private boolean isMarkedCheater = false;
 
     private int totalFramesCollected = 0;
@@ -44,6 +44,10 @@ public class TrainData {
         this.playerName = playerName;
         this.datasetFrames =
                 new ArrayList<>(GloomAI.INSTANCE.getDataCollectConfigManager().getFramesToCollect());
+    }
+
+    public boolean isCollecting(DatasetType type) {
+        return isDatasetsCollecting && datasetType == type;
     }
 
     public void writeFrame(DatasetFrame datasetFrame) {

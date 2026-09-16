@@ -3,8 +3,7 @@ package ru.gloom.api.model.data;
 import java.util.Arrays;
 
 public enum DatasetType {
-    ROTATION,
-    TARGET;
+    ROTATION;
 
     public static DatasetType fromName(String value) {
         return Arrays.stream(values())

@@ -66,6 +66,9 @@ public class RotationData extends Check implements PacketCheck {
         updated = false;
         if (PacketUtil.isRotation(event)) {
             WrapperPlayClientPlayerRotation wrapper = new WrapperPlayClientPlayerRotation(event);
+            if (!Float.isFinite(wrapper.getYaw()) || !Float.isFinite(wrapper.getPitch())) {
+                return;
+            }
             updateRotation(wrapper.getYaw(), wrapper.getPitch());
         }
     }

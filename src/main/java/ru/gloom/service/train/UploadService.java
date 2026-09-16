@@ -12,7 +12,6 @@ import org.bukkit.plugin.Plugin;
 import ru.gloom.api.model.data.DatasetFrame;
 import ru.gloom.api.model.data.DatasetType;
 import ru.gloom.api.model.frame.RotationFrame;
-import ru.gloom.api.model.frame.TargetAimFrame;
 
 @Getter
 public final class UploadService {
@@ -66,8 +65,7 @@ public final class UploadService {
             }
 
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(datasetFile, false))) {
-                writer.write(
-                        datasetType == DatasetType.TARGET ? TargetAimFrame.csvHeader() : RotationFrame.csvHeader());
+                writer.write(RotationFrame.csvHeader());
                 writer.flush();
             } catch (IOException exception) {
                 plugin.getLogger().severe("Ошибка записи заголовка CSV: " + exception.getMessage());

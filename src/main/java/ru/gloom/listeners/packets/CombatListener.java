@@ -40,6 +40,6 @@ public final class CombatListener extends PacketListenerAbstract {
             return;
         }
 
-        gloomPlayer.markAttack(target.getUniqueId());
+        gloomPlayer.tagCombat();
     }
 }

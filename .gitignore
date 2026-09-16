@@ -23,7 +23,7 @@ out/
 .project
 .settings
 .springBeans
-.sts4-cachegit add
+.sts4-cache
 bin/
 !**/src/main/**/bin/
 !**/src/test/**/bin/
@@ -39,4 +39,7 @@ bin/
 .DS_Store
 
 /GloomBackend/
+/.agents/
+/ac-backend/
+/ac-backend-deploy.tgz
 /.idea/

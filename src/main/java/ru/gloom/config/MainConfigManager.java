@@ -124,7 +124,7 @@ public class MainConfigManager extends ConfigManager {
         aiAlertMessage = messagesConfig
                 .getString(
                         "ai-alert",
-                        "{prefix} &fИгрок &c{player}&f провалил проверку &cAimAI &7[&cx{vl}&7] &7{probability}")
+                        "{prefix} &fИгрок &c{player}&f провалил проверку &cRotationAimCheck &7[&cx{vl}&7] &7{probability}")
                 .replace("{prefix}", prefix);
         aiVerboseMessage = messagesConfig
                 .getString("ai-verbose", "{prefix} &fИгрок &c{player} &fрезультат: &7{probability}")

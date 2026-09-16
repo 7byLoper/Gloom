@@ -5,18 +5,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ThreadLocalRandom;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 public final class TrackedPlayerHologram {
-    private final int baseEntityId;
     private final List<PacketHologramLine> lines = new ArrayList<>();
     private final Map<UUID, Integer> renderedLineCountByViewer = new ConcurrentHashMap<>();
-
-    public TrackedPlayerHologram() {
-        this.baseEntityId = ThreadLocalRandom.current().nextInt(1_000_000, 1_900_000);
-    }
 
     public void updateForViewer(Player viewer, Location baseLocation, List<String> textLines, double lineSpacing) {
         ensureLineCapacity(textLines.size());
@@ -69,7 +63,7 @@ public final class TrackedPlayerHologram {
 
     private void ensureLineCapacity(int requiredSize) {
         while (lines.size() < requiredSize) {
-            lines.add(new PacketHologramLine(baseEntityId + lines.size()));
+            lines.add(new PacketHologramLine());
         }
     }
 }

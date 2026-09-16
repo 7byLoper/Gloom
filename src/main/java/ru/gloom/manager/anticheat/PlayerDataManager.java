@@ -51,7 +51,7 @@ public class PlayerDataManager {
     public GloomPlayer getPlayer(@NotNull User user) {
         UUID uuid = user.getUUID();
         if (uuid == null) {
-            // UUID ещё не назначен на ранних стадиях соединения (HANDSHAKING/LOGIN).
+
             return null;
         }
         return playerDataMap.get(uuid);
@@ -104,8 +104,7 @@ public class PlayerDataManager {
 
     public void onDisconnect(User user) {
         if (user.getUUID() == null) {
-            // Соединение оборвалось на ранней стадии (HANDSHAKING/STATUS/LOGIN):
-            // пользователь никогда не регистрировался, чистить нечего.
+
             return;
         }
 

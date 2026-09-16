@@ -13,11 +13,11 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.BiConsumer;
+import java.util.function.DoubleConsumer;
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
-import ru.gloom.player.GloomPlayer;
 
 public final class AnalyzeBatchDispatcher {
     private static final int MAX_BATCH_SIZE = 32;
@@ -31,7 +31,6 @@ public final class AnalyzeBatchDispatcher {
 
     private final Plugin plugin;
     private final Supplier<String> endpointSupplier;
-    private final BiConsumer<GloomPlayer, Double> resultConsumer;
     private final HttpClient httpClient;
 
     private final ConcurrentLinkedQueue<PendingAnalyze> queue = new ConcurrentLinkedQueue<>();
@@ -46,10 +45,9 @@ public final class AnalyzeBatchDispatcher {
     private volatile boolean stopped;
 
     public AnalyzeBatchDispatcher(
-            Plugin plugin, Supplier<String> endpointSupplier, BiConsumer<GloomPlayer, Double> resultConsumer) {
+            Plugin plugin, Supplier<String> endpointSupplier) {
         this.plugin = plugin;
         this.endpointSupplier = endpointSupplier;
-        this.resultConsumer = resultConsumer;
         this.httpClient = HttpClient.newBuilder()
                 .version(HttpClient.Version.HTTP_2)
                 .connectTimeout(Duration.ofSeconds(10))
@@ -73,12 +71,17 @@ public final class AnalyzeBatchDispatcher {
         queueSize.set(0);
     }
 
-    public void enqueue(byte[] payload, GloomPlayer gloomPlayer) {
-        if (stopped) {
+    public void enqueue(byte[] payload, DoubleConsumer resultConsumer, BooleanSupplier valid) {
+        if (stopped || !valid.getAsBoolean()) {
             return;
         }
-        queue.add(new PendingAnalyze(payload, gloomPlayer));
-        if (queueSize.incrementAndGet() >= MAX_BATCH_SIZE && !stopped) {
+        int pending = queueSize.incrementAndGet();
+        if (pending > 512) {
+            queueSize.decrementAndGet();
+            return;
+        }
+        queue.add(new PendingAnalyze(payload, resultConsumer, System.nanoTime(), valid));
+        if (pending >= MAX_BATCH_SIZE && !stopped) {
             try {
                 flusher.execute(this::safeFlush);
             } catch (RejectedExecutionException ignored) {
@@ -143,12 +146,19 @@ public final class AnalyzeBatchDispatcher {
                 break;
             }
             queueSize.updateAndGet(size -> Math.max(0, size - 1));
-            items.add(item);
+            if (item.isCurrent()) {
+                items.add(item);
+            }
         }
         return items;
     }
 
-    private void sendBatch(URI endpoint, List<PendingAnalyze> batch) {
+    private void sendBatch(URI endpoint, List<PendingAnalyze> queued) {
+        List<PendingAnalyze> batch = queued.stream().filter(PendingAnalyze::isCurrent).toList();
+        if (batch.isEmpty()) {
+            probeInFlight.set(false);
+            return;
+        }
         byte[] body = encodeFraming(batch);
         HttpRequest request = HttpRequest.newBuilder(endpoint)
                 .header("Content-Type", "application/x-flatbuffers")
@@ -212,12 +222,15 @@ public final class AnalyzeBatchDispatcher {
 
         Bukkit.getScheduler().runTask(plugin, () -> {
             for (int i = 0; i < batch.size(); i++) {
-                resultConsumer.accept(batch.get(i).player, probabilities[i]);
+                PendingAnalyze item = batch.get(i);
+                if (item.isCurrent() && Double.isFinite(probabilities[i])) {
+                    item.resultConsumer.accept(probabilities[i]);
+                }
             }
         });
     }
 
-    private double[] decodeResponse(byte[] body, int expectedCount) {
+    static double[] decodeResponse(byte[] body, int expectedCount) {
         if (body == null || body.length < RESPONSE_MAGIC.length + BATCH_COUNT_SIZE) {
             throw new IllegalArgumentException("response is too short");
         }
@@ -240,10 +253,11 @@ public final class AnalyzeBatchDispatcher {
         double[] probabilities = new double[count];
         for (int i = 0; i < count; i++) {
             double probability = buffer.getDouble();
-            if (!Double.isFinite(probability)) {
-                probability = 0.0D;
+
+            if (!Double.isNaN(probability) && (!Double.isFinite(probability) || probability < 0 || probability > 1)) {
+                throw new IllegalArgumentException("probability is outside [0, 1]");
             }
-            probabilities[i] = Math.max(0.0D, Math.min(1.0D, probability));
+            probabilities[i] = probability;
         }
         return probabilities;
     }
@@ -257,8 +271,16 @@ public final class AnalyzeBatchDispatcher {
             return;
         }
 
-        queue.addAll(batch);
-        queueSize.addAndGet(batch.size());
+        for (PendingAnalyze item : batch) {
+            if (item.isCurrent()) {
+                int pending = queueSize.incrementAndGet();
+                if (pending <= 512) {
+                    queue.add(item);
+                } else {
+                    queueSize.decrementAndGet();
+                }
+            }
+        }
     }
 
     private void markUnavailable(String reason) {
@@ -300,5 +322,9 @@ public final class AnalyzeBatchDispatcher {
         return message == null || message.isBlank() ? throwable.getClass().getSimpleName() : message;
     }
 
-    private record PendingAnalyze(byte[] payload, GloomPlayer player) {}
+    private record PendingAnalyze(byte[] payload, DoubleConsumer resultConsumer, long createdAtNanos, BooleanSupplier valid) {
+        boolean isCurrent() {
+            return System.nanoTime() - createdAtNanos <= 5_000_000_000L && valid.getAsBoolean();
+        }
+    }
 }

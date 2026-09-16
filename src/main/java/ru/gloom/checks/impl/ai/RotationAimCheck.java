@@ -7,6 +7,7 @@ import lombok.Setter;
 import org.bukkit.entity.Player;
 import ru.gloom.GloomAI;
 import ru.gloom.api.configuration.CustomConfig;
+import ru.gloom.api.model.data.DatasetType;
 import ru.gloom.api.model.frame.RotationFrame;
 import ru.gloom.checks.Check;
 import ru.gloom.checks.CheckData;
@@ -17,34 +18,44 @@ import ru.gloom.utils.math.RotationRingBuffer;
 
 @Setter
 @Getter
-@CheckData(name = "AimAI", configName = "ml_check")
-public final class AimAI extends Check implements PacketCheck {
+@CheckData(name = "RotationAimCheck", configName = "ml_check")
+public final class RotationAimCheck extends Check implements PacketCheck {
     private static final double CHEAT_PROBABILITY = 0.90D;
-    private static final double LEGIT_PROBABILITY = 0.10D;
 
     private final RotationRingBuffer<RotationFrame> rotationBuffer;
 
     private double bufferFlagThreshold = 50.0D;
     private double bufferResetOnFlag = 25.0D;
     private double bufferMultiplier = 100.0D;
-    private double bufferDecrease = 0.25D;
+    private double bufferDecrease = 8.0D;
 
+    private volatile long sequenceId;
+    private boolean combatGateClosed;
     private List<RotationFrame> lastAnalyzedFrames;
     private double lastProbability;
     private double buffer = 0.0D;
 
-    public AimAI(GloomPlayer player) {
+    public RotationAimCheck(GloomPlayer player) {
         super(player);
         rotationBuffer = new RotationRingBuffer<>(
                 GloomAI.INSTANCE.getChecksConfigManager().getAnalysisSequence());
     }
 
     @Override
-    public void onPacketReceive(PacketReceiveEvent event) {
-        if (!isEnabled()) {
+    public boolean isEnabled() {
+        return GloomAI.INSTANCE.getChecksConfigManager().isRotationAiEnabled();
+    }
+
+    @Override
+    public synchronized void onPacketReceive(PacketReceiveEvent event) {
+        if (!isEnabled() && !isCollectingDataset()) {
             return;
         }
 
+        if (player.getTrainData().isDatasetsCollecting() && !isCollectingDataset()) {
+            clearFrames();
+            return;
+        }
         RotationData rotationData = player.getCheckManager().getRotationData();
         if (!rotationData.isUpdated()) {
             return;
@@ -56,9 +67,18 @@ public final class AimAI extends Check implements PacketCheck {
         }
 
         if (GloomAI.INSTANCE.getChecksConfigManager().isAimAiBypassedInRegion(bukkitPlayer)) {
-            rotationBuffer.clear();
+            clearFrames();
             return;
         }
+
+        if (!isCollectingDataset() && !player.isCombatActive()) {
+            if (!combatGateClosed) {
+                combatGateClosed = true;
+                clearSequence();
+            }
+            return;
+        }
+        combatGateClosed = false;
 
         RotationFrame rotationFrame = new RotationFrame(
                 rotationData.getDeltaYaw(),
@@ -73,14 +93,21 @@ public final class AimAI extends Check implements PacketCheck {
         collectFrame(rotationFrame);
     }
 
-    public void handleAnalyzeResult(double chance) {
+    public synchronized void handleAnalyzeResult(double chance) {
+        if (!isRequestCurrent(sequenceId)) {
+            return;
+        }
         Player bukkitPlayer = player.getBukkitPlayer();
         if (bukkitPlayer == null || !bukkitPlayer.isOnline() || !Double.isFinite(chance)) {
             return;
         }
 
+        if (isCollectingDataset()) {
+            return;
+        }
+
         if (GloomAI.INSTANCE.getChecksConfigManager().isAimAiBypassedInRegion(bukkitPlayer)) {
-            rotationBuffer.clear();
+            clearFrames();
             return;
         }
 
@@ -106,7 +133,7 @@ public final class AimAI extends Check implements PacketCheck {
         player.getPunishmentManager()
                 .handleViolation(
                         this,
-                        "prob: %.4f, buffer: %.2f, check: AimAI".formatted(lastProbability, bufferAtFlag),
+                        "prob: %.4f, buffer: %.2f, check: RotationAimCheck".formatted(lastProbability, bufferAtFlag),
                         lastProbability);
 
         buffer = bufferResetOnFlag;
@@ -118,17 +145,18 @@ public final class AimAI extends Check implements PacketCheck {
     private void updateBuffer(double probability) {
         if (probability > CHEAT_PROBABILITY) {
             buffer += (probability - CHEAT_PROBABILITY) * bufferMultiplier;
-        } else if (probability < LEGIT_PROBABILITY) {
-            buffer = Math.max(0.0D, buffer - bufferDecrease);
+            return;
         }
+
+        buffer = Math.max(0.0D, buffer - (CHEAT_PROBABILITY - probability) * bufferDecrease);
     }
 
     private void collectFrame(RotationFrame rotationFrame) {
-        if (player.getTrainData().isDatasetsCollecting()) {
+        if (isCollectingDataset()) {
             player.getTrainData().writeFrame(rotationFrame);
-        }
-
-        if (!player.isInCombat()) {
+            if (rotationBuffer.size() > 0) {
+                clearFrames();
+            }
             return;
         }
 
@@ -138,8 +166,28 @@ public final class AimAI extends Check implements PacketCheck {
         }
     }
 
-    public void clearFrames() {
+    private boolean isCollectingDataset() {
+        return player.getTrainData().isCollecting(DatasetType.ROTATION);
+    }
+
+    public synchronized void clearFrames() {
+        clearSequence();
+        buffer = 0.0D;
+    }
+
+    private synchronized void clearSequence() {
+        sequenceId++;
         rotationBuffer.clear();
+    }
+
+    public boolean isRequestCurrent(long sequence) {
+        return sequence == sequenceId && isEnabled() && !player.getTrainData().isDatasetsCollecting();
+    }
+
+    public synchronized void handleAnalyzeResult(double chance, long sequence) {
+        if (isRequestCurrent(sequence)) {
+            handleAnalyzeResult(chance);
+        }
     }
 
     @Override
@@ -157,11 +205,11 @@ public final class AimAI extends Check implements PacketCheck {
         String verboseTemplate = GloomAI.INSTANCE.getMainConfigManager().getAiVerboseMessage();
         String verboseMessage = verboseTemplate
                 .replace("{player}", bukkitPlayer.getName())
-                .replace("{check}", "AimAI")
+                .replace("{check}", "RotationAimCheck")
                 .replace("{probability}", probability)
                 .replace("{buffer}", "%.2f".formatted(buffer));
         if (!verboseTemplate.contains("{check}")) {
-            verboseMessage += " &7[AimAI]";
+            verboseMessage += " &7[RotationAimCheck]";
         }
 
         String alertMessage = GloomAI.INSTANCE
@@ -195,11 +243,11 @@ public final class AimAI extends Check implements PacketCheck {
         String verboseTemplate = GloomAI.INSTANCE.getMainConfigManager().getAiVerboseMessage();
         String verboseMessage = verboseTemplate
                 .replace("{player}", bukkitPlayer.getName())
-                .replace("{check}", "AimAI")
+                .replace("{check}", "RotationAimCheck")
                 .replace("{probability}", probability)
                 .replace("{buffer}", "%.2f".formatted(buffer));
         if (!verboseTemplate.contains("{check}")) {
-            verboseMessage += " &7[AimAI]";
+            verboseMessage += " &7[RotationAimCheck]";
         }
 
         GloomAI.INSTANCE.getAlertManager().sendVerbose(verboseMessage);
@@ -207,11 +255,14 @@ public final class AimAI extends Check implements PacketCheck {
 
     public void onReload(CustomConfig config) {
         String path = getConfigName();
+        if (rotationBuffer != null) {
+            clearFrames();
+        }
 
         this.bufferFlagThreshold = Math.max(0.0D, config.getDouble(path + ".buffer.flag", 50.0D));
         this.bufferResetOnFlag =
                 Math.max(0.0D, Math.min(bufferFlagThreshold, config.getDouble(path + ".buffer.reset_on_flag", 25.0D)));
         this.bufferMultiplier = Math.max(0.0D, config.getDouble(path + ".buffer.multiplier", 100.0D));
-        this.bufferDecrease = Math.max(0.0D, config.getDouble(path + ".buffer.decrease", 0.25D));
+        this.bufferDecrease = Math.max(0.0D, config.getDouble(path + ".buffer.decrease", 8.0D));
     }
 }

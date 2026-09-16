@@ -118,11 +118,11 @@ public class Check implements AbstractCheck {
     }
 
     protected boolean canFlag() {
-        return enabled && !experimental;
+        return isEnabled() && !experimental;
     }
 
     protected boolean canAlert() {
-        return enabled;
+        return isEnabled();
     }
 
     public final void reload(CustomConfig configuration) {

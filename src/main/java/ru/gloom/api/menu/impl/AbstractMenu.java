@@ -47,12 +47,11 @@ public abstract class AbstractMenu implements InventoryHolder, IMenu {
 
         populateInventory();
         player.openInventory(menuInventory);
-        // Bukkit.getScheduler().runTaskLater(CoreService.coreInstance(), () -> player.openInventory(menuInventory),
-        // 1L);
+
     }
 
     protected Inventory createInventory() {
-        // Component title = ComponentColorize.fromLegacyString(getTitle());
+
         String title = getTitle() != null ? StringColorize.parse(getTitle()) : "";
         return Bukkit.createInventory(this, getSize(), title);
     }
@@ -101,12 +100,12 @@ public abstract class AbstractMenu implements InventoryHolder, IMenu {
 
     @Override
     public void onBottomInventoryClick(@NotNull InventoryClickEvent event) {
-        // Пусто по умолчанию
+
     }
 
     @Override
     public void onClose(@NotNull InventoryCloseEvent event) {
-        // Пусто по умолчанию
+
     }
 
     @Override
@@ -115,7 +114,7 @@ public abstract class AbstractMenu implements InventoryHolder, IMenu {
     }
 
     public void refreshMenu() {
-        // Вызывается каждую секунду
+
     }
 
     public void removeButton(int slot) {

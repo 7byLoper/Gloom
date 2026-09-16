@@ -3,7 +3,7 @@
   <p>AI-античит для Minecraft-серверов с анализом aim-поведения через внешний inference API.</p>
 
   <p>
-    <img alt="Minecraft" src="https://img.shields.io/badge/Minecraft-1.16+-62B47A?style=flat">
+    <img alt="Minecraft" src="https://img.shields.io/badge/Minecraft-1.20.1+-62B47A?style=flat">
     <img alt="Java" src="https://img.shields.io/badge/Java-17+-E76F00?style=flat&logo=openjdk&logoColor=white">
     <img alt="Paper" src="https://img.shields.io/badge/Paper-supported-222222?style=flat">
     <img alt="License" src="https://img.shields.io/badge/License-GPL--3.0-blue?style=flat">
@@ -53,7 +53,7 @@ ml_check:
 ## Требования
 
 - Java 17+
-- Paper 1.16+
+- Paper 1.20.1+
 - PacketEvents
 - WorldGuard опционально, если нужны bypass-настройки для регионов
 - Redis опционально, если нужна синхронизация между серверами
@@ -91,21 +91,21 @@ gloom.command.use
 ## Сборка из исходников
 
 ```bash
-git clone https://github.com/fruzzexx/GloomAI.git
-cd GloomAI
-./gradlew :GloomAI:shadowJar
+git clone https://github.com/7byLoper/Gloom.git
+cd Gloom
+./gradlew shadowJar
 ```
 
 На Windows:
 
 ```bat
-gradlew.bat :GloomAI:shadowJar
+gradlew.bat shadowJar
 ```
 
 Готовый jar-файл будет находиться в:
 
 ```text
-GloomAI/build/libs/
+build/libs/
 ```
 
 При создании issue рекомендуется приложить:

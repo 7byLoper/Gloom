@@ -7,7 +7,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import ru.gloom.api.model.analyze.AnalyzeService;
 import ru.gloom.api.model.frame.RotationFrame;
-import ru.gloom.checks.impl.ai.AimAI;
+import ru.gloom.checks.impl.ai.RotationAimCheck;
 import ru.gloom.config.anticheat.ChecksConfigManager;
 import ru.gloom.player.GloomPlayer;
 import ru.gloom.protocol.flatbuffers.AnalyzeRequest;
@@ -20,8 +20,9 @@ public final class FlatBufferAnalyzeService implements AnalyzeService {
 
     @Override
     public void analyzePlayerFrames(GloomPlayer gloomPlayer) {
-        AimAI aimAI = gloomPlayer.getCheckManager().getAimAI();
-        if (!aimAI.getRotationBuffer().isFull()) {
+        RotationAimCheck rotationAimCheck = gloomPlayer.getCheckManager().getRotationAimCheck();
+        long sequence = rotationAimCheck.getSequenceId();
+        if (!rotationAimCheck.isRequestCurrent(sequence) || !rotationAimCheck.getRotationBuffer().isFull()) {
             return;
         }
 
@@ -30,12 +31,12 @@ public final class FlatBufferAnalyzeService implements AnalyzeService {
             return;
         }
 
-        List<RotationFrame> frames = aimAI.getRotationBuffer().pollSnapshot(configManager.getAnalysisStep());
+        List<RotationFrame> frames = rotationAimCheck.getRotationBuffer().pollSnapshot(configManager.getAnalysisStep());
 
         if (frames == null || frames.isEmpty()) {
             return;
         }
-        aimAI.setLastAnalyzedFrames(frames);
+        rotationAimCheck.setLastAnalyzedFrames(frames);
 
         final byte[] payload;
         try {
@@ -45,7 +46,8 @@ public final class FlatBufferAnalyzeService implements AnalyzeService {
             return;
         }
 
-        dispatcher.enqueue(payload, gloomPlayer);
+        dispatcher.enqueue(payload, probability -> rotationAimCheck.handleAnalyzeResult(probability, sequence),
+                () -> rotationAimCheck.isRequestCurrent(sequence));
     }
 
     private byte[] encodeRequest(String playerName, List<RotationFrame> frames) {

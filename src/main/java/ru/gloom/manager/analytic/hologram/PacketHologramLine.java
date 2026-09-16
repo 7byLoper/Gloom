@@ -5,7 +5,6 @@ import com.github.retrooper.packetevents.protocol.entity.data.EntityData;
 import com.github.retrooper.packetevents.protocol.entity.data.EntityDataTypes;
 import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes;
 import com.github.retrooper.packetevents.util.Vector3d;
-import com.github.retrooper.packetevents.util.adventure.AdventureSerializer;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerDestroyEntities;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityMetadata;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityTeleport;
@@ -17,6 +16,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.ChatColor;
@@ -24,11 +24,21 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 public final class PacketHologramLine {
+
+    private static final AtomicInteger ENTITY_ID_ALLOCATOR = new AtomicInteger(Integer.MAX_VALUE);
+
+    private static final byte INVISIBLE_FLAG = 0x20;
+    private static final byte ARMOR_STAND_MARKER_FLAG = 0x10;
+
     private final int entityId;
     private final UUID entityUuid;
 
     private final Set<UUID> spawnedViewers = ConcurrentHashMap.newKeySet();
     private final Map<UUID, String> lastTextByViewer = new ConcurrentHashMap<>();
+
+    public PacketHologramLine() {
+        this(ENTITY_ID_ALLOCATOR.getAndDecrement());
+    }
 
     public PacketHologramLine(int entityId) {
         this.entityId = entityId;
@@ -37,6 +47,12 @@ public final class PacketHologramLine {
 
     public void spawn(Player viewer, Location location, String text) {
         UUID viewerId = viewer.getUniqueId();
+
+        if (!spawnedViewers.add(viewerId)) {
+            teleport(viewer, location);
+            updateText(viewer, text);
+            return;
+        }
 
         WrapperPlayServerSpawnEntity spawnPacket = new WrapperPlayServerSpawnEntity(
                 entityId,
@@ -47,11 +63,10 @@ public final class PacketHologramLine {
                 0.0F,
                 0.0F,
                 0,
-                Optional.empty());
+                Optional.of(Vector3d.zero()));
 
         PacketEvents.getAPI().getPlayerManager().sendPacket(viewer, spawnPacket);
 
-        spawnedViewers.add(viewerId);
         lastTextByViewer.remove(viewerId);
 
         updateText(viewer, text);
@@ -109,13 +124,12 @@ public final class PacketHologramLine {
 
         String coloredText = ChatColor.translateAlternateColorCodes('&', text);
         Component component = LegacyComponentSerializer.legacySection().deserialize(coloredText);
-        String jsonComponent = AdventureSerializer.getGsonSerializer().serialize(component);
 
-        metadata.add(new EntityData<>(0, EntityDataTypes.BYTE, (byte) 0x20));
-        metadata.add(new EntityData<>(2, EntityDataTypes.OPTIONAL_COMPONENT, Optional.of(jsonComponent)));
+        metadata.add(new EntityData<>(0, EntityDataTypes.BYTE, INVISIBLE_FLAG));
+        metadata.add(new EntityData<>(2, EntityDataTypes.OPTIONAL_ADV_COMPONENT, Optional.of(component)));
         metadata.add(new EntityData<>(3, EntityDataTypes.BOOLEAN, true));
         metadata.add(new EntityData<>(5, EntityDataTypes.BOOLEAN, true));
-        metadata.add(new EntityData<>(14, EntityDataTypes.BYTE, (byte) 0x10));
+        metadata.add(new EntityData<>(15, EntityDataTypes.BYTE, ARMOR_STAND_MARKER_FLAG));
 
         return metadata;
     }

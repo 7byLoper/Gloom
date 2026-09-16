@@ -42,9 +42,6 @@ public class ReflectionUtils {
         }
     }
 
-    /**
-     * Finds a field by name, searching up the superclass hierarchy.
-     */
     public static Field getField(Class<?> clazz, String fieldName) {
         while (clazz != null) {
             try {

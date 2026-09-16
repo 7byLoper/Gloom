@@ -13,7 +13,7 @@ info_statistic:
 
 messages:
   start:
-    help: "&fИспользование: &7/gloom datacollect start <коллектор> <cheat|legit> <rotation|target> [название_чита]"
+    help: "&fИспользование: &7/gloom datacollect start <коллектор> <cheat|legit> <rotation> [название_чита]"
     none_selected: "&fДля сбора данных читера необходимо указать название чита"
     start: "&fЗапущен сбор набора данных для &7{target}"
   stop:

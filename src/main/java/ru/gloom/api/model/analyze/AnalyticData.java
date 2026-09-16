@@ -8,9 +8,9 @@ public record AnalyticData(String username, List<RotationFrame> rotationFrames) 
 
     public static AnalyticData createData(GloomPlayer gloomPlayer) {
         final List<RotationFrame> rotationFrames =
-                gloomPlayer.getCheckManager().getAimAI().getRotationBuffer().getSnapshot();
+                gloomPlayer.getCheckManager().getRotationAimCheck().getRotationBuffer().getSnapshot();
 
-        gloomPlayer.getCheckManager().getAimAI().setLastAnalyzedFrames(rotationFrames);
+        gloomPlayer.getCheckManager().getRotationAimCheck().setLastAnalyzedFrames(rotationFrames);
 
         return new AnalyticData(gloomPlayer.getName(), rotationFrames);
     }

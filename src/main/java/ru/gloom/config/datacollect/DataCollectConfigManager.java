@@ -55,7 +55,7 @@ public class DataCollectConfigManager extends ConfigManager {
 
         messageStartHelp = config.getString(
                 "messages.start.help",
-                "&#5699DE[DataCollect] &fUsage: &7/gloom datacollect start <collector> <cheat|legit> <rotation|target> [cheat_name]");
+                "&#5699DE[DataCollect] &fUsage: &7/gloom datacollect start <collector> <cheat|legit> <rotation> [cheat_name]");
         messageStartNoneSelected = config.getString(
                 "messages.start.none_selected",
                 "&#5699DE[DataCollect] &fFor cheat data collection you must specify cheat name");

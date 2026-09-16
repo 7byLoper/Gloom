@@ -26,11 +26,8 @@ public class GloomPlayer {
 
     private Player bukkitPlayer;
 
-    private long lastCombatTime = 0L;
+    private volatile long lastCombatTime = 0L;
     private boolean isInCombat = false;
-
-    private UUID lastTargetUuid;
-    private long lastAttackMillis = Long.MIN_VALUE;
 
     public GloomPlayer(User user) {
         this.user = user;
@@ -62,6 +59,8 @@ public class GloomPlayer {
         trainData.setDatasetsCollecting(true);
         trainData.setMarkedCheater(cheater);
 
+        checkManager.clearFrames();
+
         Player owner = trainData.getDatasetsOwner() == null ? null : Bukkit.getPlayer(trainData.getDatasetsOwner());
 
         Bukkit.getPluginManager().callEvent(new StartTrainEvent(target, trainData, owner, cheater, datasetName));
@@ -73,18 +72,16 @@ public class GloomPlayer {
         trainData.stopCollecting();
     }
 
-    public void markAttack(UUID targetUuid) {
-        lastTargetUuid = targetUuid;
-        lastAttackMillis = System.currentTimeMillis();
-        tagCombat();
-    }
-
     public void tagCombat() {
         getTrainData().tagCombat();
 
         this.lastCombatTime = System.currentTimeMillis()
                 + GloomAI.INSTANCE.getChecksConfigManager().getCombatTimer();
         this.isInCombat = true;
+    }
+
+    public boolean isCombatActive() {
+        return System.currentTimeMillis() <= lastCombatTime;
     }
 
     public TrainData getTrainData() {
@@ -103,14 +100,6 @@ public class GloomPlayer {
         }
 
         return this.isInCombat;
-    }
-
-    public float getTicksSinceAttackFeature() {
-        if (lastAttackMillis == Long.MIN_VALUE) {
-            return 40.0F;
-        }
-        float ticks = (System.currentTimeMillis() - lastAttackMillis) / 50.0F;
-        return Math.max(0.0F, Math.min(40.0F, ticks));
     }
 
     public Player getBukkitPlayer() {

@@ -32,8 +32,6 @@ import ru.gloom.manager.anticheat.PlayerDataManager;
 import ru.gloom.service.PlayerOnlineService;
 import ru.gloom.service.analyze.AnalyzeBatchDispatcher;
 import ru.gloom.service.analyze.FlatBufferAnalyzeService;
-import ru.gloom.service.analyze.TargetFlatBufferAnalyzeService;
-import ru.gloom.utils.VersionHelper;
 import ru.gloom.utils.entity.TargetEntityIndex;
 import ru.gloom.utils.entity.TargetEntityIndexListener;
 
@@ -61,8 +59,6 @@ public class GloomAI extends JavaPlugin {
     private MonitorManager monitorManager;
 
     private AnalyzeBatchDispatcher analyzeBatchDispatcher;
-    private AnalyzeBatchDispatcher targetAnalyzeBatchDispatcher;
-    private TargetFlatBufferAnalyzeService targetAnalyzeService;
     private CommandManager commandManager;
 
     private TargetEntityIndex targetEntityIndex;
@@ -93,17 +89,9 @@ public class GloomAI extends JavaPlugin {
 
         this.aiResultManager = new AIResultManager();
         this.analyzeBatchDispatcher = new AnalyzeBatchDispatcher(
-                this, checksConfigManager::getAnalyzeServer, aiResultManager::handleAnalyzeResult);
+                this, checksConfigManager::getAnalyzeServer);
         this.analyzeBatchDispatcher.start();
         this.analyzeService = new FlatBufferAnalyzeService(checksConfigManager, analyzeBatchDispatcher);
-        this.targetAnalyzeBatchDispatcher = new AnalyzeBatchDispatcher(
-                this,
-                checksConfigManager::getTargetAnalyzeServer,
-                (gloomPlayer, probability) ->
-                        gloomPlayer.getCheckManager().getTargetAimAI().handleAnalyzeResult(probability));
-        this.targetAnalyzeBatchDispatcher.start();
-        this.targetAnalyzeService =
-                new TargetFlatBufferAnalyzeService(checksConfigManager, targetAnalyzeBatchDispatcher);
         this.alertManager = new AlertManager(mainConfigManager);
         this.violationManager = new ViolationManager();
 
@@ -126,9 +114,6 @@ public class GloomAI extends JavaPlugin {
 
         initRedis();
 
-        // Регистрируем пакет-листенеры последними: PacketEvents уже инициализирован
-        // внешним плагином, поэтому листенеры начинают ловить трафик сразу же —
-        // все зависимости (playerDataManager и т.д.) к этому моменту должны быть готовы.
         packetManager.register();
     }
 
@@ -157,9 +142,6 @@ public class GloomAI extends JavaPlugin {
         if (analyzeBatchDispatcher != null) {
             analyzeBatchDispatcher.stop();
         }
-        if (targetAnalyzeBatchDispatcher != null) {
-            targetAnalyzeBatchDispatcher.stop();
-        }
         if (violationManager != null) {
             violationManager.shutdown();
         }
@@ -187,11 +169,7 @@ public class GloomAI extends JavaPlugin {
         }
     }
 
-    @SuppressWarnings("deprecation")
     private ItemStack createSkullHead() {
-        if (VersionHelper.IS_ITEM_LEGACY) {
-            return new ItemStack(Material.valueOf("SKULL_ITEM"), 1, (short) 3);
-        }
         return new ItemStack(Material.PLAYER_HEAD, 1);
     }
 

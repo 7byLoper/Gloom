@@ -2,7 +2,7 @@ package ru.gloom.manager;
 
 import lombok.RequiredArgsConstructor;
 import ru.gloom.GloomAI;
-import ru.gloom.checks.impl.ai.AimAI;
+import ru.gloom.checks.impl.ai.RotationAimCheck;
 import ru.gloom.player.GloomPlayer;
 
 @RequiredArgsConstructor
@@ -12,7 +12,7 @@ public class AIResultManager {
             return;
         }
 
-        AimAI check = gloomPlayer.getCheckManager().getAimAI();
+        RotationAimCheck check = gloomPlayer.getCheckManager().getRotationAimCheck();
         if (check == null) {
             return;
         }
@@ -26,7 +26,7 @@ public class AIResultManager {
             return;
         }
 
-        AimAI check = gloomPlayer.getCheckManager().getAimAI();
+        RotationAimCheck check = gloomPlayer.getCheckManager().getRotationAimCheck();
         if (check == null) {
             return;
         }

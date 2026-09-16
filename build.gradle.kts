@@ -32,8 +32,8 @@ repositories {
 }
 
 dependencies {
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
     compileOnly("io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT")
-    compileOnly("com.destroystokyo.paper:paper-api:1.16.5-R0.1-SNAPSHOT")
 
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
@@ -46,16 +46,15 @@ dependencies {
     compileOnly("com.sk89q.worldguard:worldguard-core:7.0.5") {
         isTransitive = false
     }
-    compileOnly("com.sk89q.worldedit:worldedit-bukkit:7.2.0-SNAPSHOT") {
+    compileOnly("com.sk89q.worldedit:worldedit-bukkit:7.2.17") {
         isTransitive = false
     }
-    compileOnly("com.sk89q.worldedit:worldedit-core:7.2.0-SNAPSHOT") {
+    compileOnly("com.sk89q.worldedit:worldedit-core:7.2.17") {
         isTransitive = false
     }
 
     compileOnly(libs.geyser.api)
     compileOnly(libs.floodgate.api)
-    compileOnly("com.mojang:authlib:1.5.21")
 
     implementation("com.google.flatbuffers:flatbuffers-java:25.2.10")
     implementation("io.lettuce:lettuce-core:7.4.0.RELEASE")
@@ -70,9 +69,14 @@ dependencies {
 }
 
 tasks {
+    test {
+        useJUnitPlatform()
+    }
+    withType<JavaCompile>().configureEach {
+        options.encoding = "UTF-8"
+    }
     shadowJar {
         relocate("com.fasterxml.jackson", "ru.gloom.shade.jackson")
-        //relocate("com.github.retrooper.packetevents", "ru.gloom.libs.packetevents")
         relocate("okhttp3", "ru.gloom.shade.okhttp3")
         relocate("okio", "ru.gloom.shade.okio")
         relocate("kotlin", "ru.gloom.shade.kotlin")
@@ -134,7 +138,6 @@ java {
         toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
     }
 }
-
 
 publishing {
     publications {

@@ -9,7 +9,7 @@ verbose-disabled: '{prefix} &#F3F3F3Подробная информация &#F6
 holograms-enabled: '{prefix} &#F3F3F3Показ голограмм над игроком &#95F643включен&#F3F3F3!'
 holograms-disabled: '{prefix} &#F3F3F3Показ голограмм над игроком &#F65943отключен&#F3F3F3!'
 
-ai-alert: '{prefix} &#F3F3F3Игрок &#CDCDCD{player}&#F3F3F3 провалил проверку &#F65943AimAI &#DBDBDB[&#F65943x{vl}&#DBDBDB]'
+ai-alert: '{prefix} &#F3F3F3Игрок &#CDCDCD{player}&#F3F3F3 провалил проверку &#F65943RotationAimCheck &#DBDBDB[&#F65943x{vl}&#DBDBDB]'
 ai-verbose: '{prefix} &#F3F3F3Игрок &#CDCDCD{player} &#F3F3F3проверка: &#CDCDCD{check}&#F3F3F3, результат: &#CDCDCD{probability}&#F3F3F3, буфер: &#CDCDCD{buffer}'
 
 alert: '{prefix} &fИгрок &x&F&B&0&8&0&8{player} &fпровалил &7&x&F&B&0&8&0&8{check_name}

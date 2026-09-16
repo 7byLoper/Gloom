@@ -25,39 +25,18 @@ import ru.gloom.utils.StringColorize;
 @SuppressWarnings("ALL")
 public class ItemBuilder {
 
-    /**
-     * Зачарование для эффекта свечения. Резолвится по registry-ключу
-     * {@code minecraft:unbreaking}, который валиден во всех версиях (1.16.5–1.21.11),
-     * в отличие от Bukkit-поля {@code Enchantment.DURABILITY}, удалённого в новых API.
-     */
     private static final Enchantment GLOW_ENCHANTMENT = Enchantment.getByKey(NamespacedKey.minecraft("unbreaking"));
 
     private final ItemStack item;
 
-    /**
-     * Конструктор ItemBuilder на основе существующего ItemStack.
-     *
-     * @param item ItemStack для модификации (создаётся клон, чтобы не изменять оригинал)
-     */
     public ItemBuilder(ItemStack item) {
         this.item = item != null ? item.clone() : new ItemStack(Material.AIR);
     }
 
-    /**
-     * Конструктор ItemBuilder с указанным материалом.
-     *
-     * @param material Тип материала для нового ItemStack
-     */
     public ItemBuilder(Material material) {
         this.item = new ItemStack(material != null ? material : Material.AIR);
     }
 
-    /**
-     * Создаёт ItemBuilder на основе секции конфигурации.
-     *
-     * @param section Секция конфигурации, содержащая данные о предмете
-     * @return Новый экземпляр ItemBuilder с параметрами из конфига
-     */
     public static ItemBuilder fromConfig(ConfigurationSection section) {
         if (section == null) {
             return new ItemBuilder(Material.AIR);
@@ -135,12 +114,6 @@ public class ItemBuilder {
         return builder;
     }
 
-    /**
-     * Безопасно парсит строку материала, возвращая AIR при неверном формате.
-     *
-     * @param materialStr Название материала для парсинга
-     * @return Спарсенный Material или AIR, если материал неверный
-     */
     private static Material parseMaterial(String materialStr) {
         try {
             return Material.valueOf(materialStr.toUpperCase());
@@ -150,12 +123,6 @@ public class ItemBuilder {
         }
     }
 
-    /**
-     * Парсит строки атрибутов в объекты AttributeData.
-     *
-     * @param attributeStrings Список строк атрибутов
-     * @return Список спарсенных объектов AttributeData
-     */
     public static List<AttributeData> parseAttributes(List<String> attributeStrings) {
         return attributeStrings.stream()
                 .map(ItemBuilder::parseAttributeString)
@@ -163,12 +130,6 @@ public class ItemBuilder {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Парсит одну строку атрибута в формате "slot:attribute:value".
-     *
-     * @param str Строка атрибута для парсинга
-     * @return Спарсенный AttributeData или null, если формат неверный
-     */
     public static AttributeData parseAttributeString(String str) {
         try {
             String[] parts = str.split(":");
@@ -187,12 +148,6 @@ public class ItemBuilder {
         return null;
     }
 
-    /**
-     * Парсит слот экипировки из строки.
-     *
-     * @param slotStr Строка со слотом для парсинга
-     * @return EquipmentSlot или null, если слот неверный
-     */
     private static EquipmentSlot parseSlot(String slotStr) {
         return switch (slotStr.toLowerCase()) {
             case "hand", "mainhand" -> EquipmentSlot.HAND;
@@ -205,12 +160,6 @@ public class ItemBuilder {
         };
     }
 
-    /**
-     * Парсит атрибут из строки.
-     *
-     * @param attrStr Строка с атрибутом для парсинга
-     * @return Attribute или null, если атрибут неверный
-     */
     private static Attribute parseAttribute(String attrStr) {
         try {
             return Attribute.valueOf(attrStr.toUpperCase());
@@ -219,12 +168,6 @@ public class ItemBuilder {
         }
     }
 
-    /**
-     * Применяет эффекты зелья из списка строк в формате "POTION:время:сила".
-     *
-     * @param effects Список строк с эффектами зелий
-     * @return Этот экземпляр ItemBuilder
-     */
     public ItemBuilder potionEffects(List<String> effects) {
         if (effects == null || effects.isEmpty()) return this;
 
@@ -261,23 +204,12 @@ public class ItemBuilder {
         return meta(potionMeta);
     }
 
-    /**
-     * Применяет несколько зачарований из списка строк в формате "[namespace:]key:level".
-     *
-     * @param enchantments Список строк с зачарованиями
-     * @return Этот экземпляр ItemBuilder
-     */
     public ItemBuilder enchantments(List<String> enchantments) {
         if (enchantments == null) return this;
         enchantments.forEach(this::applyEnchantment);
         return this;
     }
 
-    /**
-     * Применяет одно зачарование из строки в формате "[namespace:]key:level".
-     *
-     * @param enchantmentStr Строка с зачарованием для парсинга и применения
-     */
     private void applyEnchantment(String enchantmentStr) {
         try {
             String[] parts = enchantmentStr.split(":");
@@ -310,12 +242,6 @@ public class ItemBuilder {
         }
     }
 
-    /**
-     * Находит зачарование по имени или ключу (с поддержкой кастомных неймспейсов).
-     *
-     * @param name Имя зачарования (может включать неймспейс, например, "suncore:custom_enchant" или "protection")
-     * @return Enchantment или null, если не найдено
-     */
     private Enchantment getEnchantmentByName(String name) {
         if (name == null) return null;
 
@@ -341,23 +267,11 @@ public class ItemBuilder {
         }
     }
 
-    /**
-     * Применяет несколько атрибутов из списка строк в формате "slot:attribute:value".
-     *
-     * @param attributes Список строк с атрибутами
-     * @return Этот экземпляр ItemBuilder
-     */
     public ItemBuilder attributes(List<String> attributes) {
         if (attributes == null) return this;
         return addAttributes(parseAttributes(attributes));
     }
 
-    /**
-     * Добавляет спарсенные данные атрибутов к предмету.
-     *
-     * @param attributes Список объектов AttributeData
-     * @return Этот экземпляр ItemBuilder
-     */
     public ItemBuilder addAttributes(List<AttributeData> attributes) {
         if (attributes == null || attributes.isEmpty()) return this;
 
@@ -377,32 +291,15 @@ public class ItemBuilder {
         return meta(meta);
     }
 
-    /**
-     * Получает ItemMeta текущего предмета.
-     *
-     * @return ItemMeta или null, если не применимо
-     */
     public ItemMeta meta() {
         return item.getItemMeta();
     }
 
-    /**
-     * Устанавливает ItemMeta для текущего предмета.
-     *
-     * @param meta ItemMeta для установки
-     * @return Этот экземпляр ItemBuilder
-     */
     public ItemBuilder meta(ItemMeta meta) {
         item.setItemMeta(meta);
         return this;
     }
 
-    /**
-     * Устанавливает пользовательские данные модели для предмета.
-     *
-     * @param model Значение пользовательских данных модели
-     * @return Этот экземпляр ItemBuilder
-     */
     public ItemBuilder model(int model) {
         ItemMeta meta = meta();
         if (meta == null) return this;
@@ -410,12 +307,6 @@ public class ItemBuilder {
         return meta(meta);
     }
 
-    /**
-     * Добавляет флаги предмета.
-     *
-     * @param itemFlags Флаги предмета для добавления
-     * @return Этот экземпляр ItemBuilder
-     */
     public ItemBuilder flags(ItemFlag... itemFlags) {
         ItemMeta meta = meta();
         if (meta == null || itemFlags == null) return this;
@@ -423,12 +314,6 @@ public class ItemBuilder {
         return meta(meta);
     }
 
-    /**
-     * Добавляет флаги предмета из строковых представлений.
-     *
-     * @param itemFlags Названия флагов предмета для добавления
-     * @return Этот экземпляр ItemBuilder
-     */
     public ItemBuilder flags(String... itemFlags) {
         if (itemFlags == null) return this;
         ItemMeta meta = meta();
@@ -443,13 +328,6 @@ public class ItemBuilder {
         return meta(meta);
     }
 
-    /**
-     * Добавляет зачарование к предмету.
-     *
-     * @param enchantment Зачарование для добавления
-     * @param level       Уровень зачарования
-     * @return Этот экземпляр ItemBuilder
-     */
     public ItemBuilder enchantment(Enchantment enchantment, int level) {
         if (enchantment == null) return this;
         ItemMeta meta = meta();
@@ -458,22 +336,11 @@ public class ItemBuilder {
         return meta(meta);
     }
 
-    /**
-     * Получает отображаемое имя предмета.
-     *
-     * @return Отображаемое имя или пустая строка, если не установлено
-     */
     public String name() {
         ItemMeta meta = meta();
         return meta != null && meta.hasDisplayName() ? meta.getDisplayName() : "";
     }
 
-    /**
-     * Устанавливает отображаемое имя предмета.
-     *
-     * @param name Отображаемое имя для установки
-     * @return Этот экземпляр ItemBuilder
-     */
     public ItemBuilder name(String name) {
         ItemMeta meta = meta();
         if (meta == null || name == null) return this;
@@ -481,11 +348,6 @@ public class ItemBuilder {
         return meta(meta);
     }
 
-    /**
-     * Получает отображаемое имя предмета в формате Adventure Component.
-     *
-     * @return Component отображаемого имени или пустой Component, если имя не установлено
-     */
     public Component componentName() {
         ItemMeta meta = meta();
         if (meta == null || !meta.hasDisplayName() || meta.displayName() == null) {
@@ -495,12 +357,6 @@ public class ItemBuilder {
         return meta.displayName();
     }
 
-    /**
-     * Устанавливает отображаемое имя предмета из Adventure Component.
-     *
-     * @param name Component отображаемого имени
-     * @return Этот экземпляр ItemBuilder
-     */
     public ItemBuilder name(Component name) {
         ItemMeta meta = meta();
         if (meta == null || name == null) return this;
@@ -508,21 +364,11 @@ public class ItemBuilder {
         return meta(meta);
     }
 
-    /**
-     * Получает описание (lore) предмета.
-     *
-     * @return Список строк описания или пустой список, если не установлено
-     */
     public List<String> lore() {
         ItemMeta meta = meta();
         return meta != null && meta.getLore() != null ? meta.getLore() : new ArrayList<>();
     }
 
-    /**
-     * Получает описание предмета в формате Adventure Component.
-     *
-     * @return Список компонентов описания или пустой список, если описание не установлено
-     */
     public List<Component> componentLore() {
         ItemMeta meta = meta();
         if (meta == null || meta.lore() == null) {
@@ -532,12 +378,6 @@ public class ItemBuilder {
         return new ArrayList<>(meta.lore());
     }
 
-    /**
-     * Устанавливает описание (lore) предмета.
-     *
-     * @param lore Список строк описания для установки
-     * @return Этот экземпляр ItemBuilder
-     */
     public ItemBuilder lore(List<String> lore) {
         ItemMeta meta = meta();
         if (meta == null || lore == null || lore.isEmpty()) {
@@ -548,12 +388,6 @@ public class ItemBuilder {
         return meta(meta);
     }
 
-    /**
-     * Устанавливает описание предмета из Adventure Component.
-     *
-     * @param lore Компоненты описания для установки
-     * @return Этот экземпляр ItemBuilder
-     */
     public ItemBuilder lore(Component... lore) {
         if (lore == null) {
             return this;
@@ -562,12 +396,6 @@ public class ItemBuilder {
         return componentLore(Arrays.asList(lore));
     }
 
-    /**
-     * Устанавливает описание предмета из списка Adventure Component.
-     *
-     * @param lore Компоненты описания для установки
-     * @return Этот экземпляр ItemBuilder
-     */
     public ItemBuilder componentLore(List<Component> lore) {
         ItemMeta meta = meta();
         if (meta == null || lore == null) {
@@ -578,12 +406,6 @@ public class ItemBuilder {
         return meta(meta);
     }
 
-    /**
-     * Добавляет строки описания к существующему описанию.
-     *
-     * @param lore Строки описания для добавления
-     * @return Этот экземпляр ItemBuilder
-     */
     public ItemBuilder addLore(String... lore) {
         if (lore == null) {
             return this;
@@ -601,12 +423,6 @@ public class ItemBuilder {
         return meta(meta);
     }
 
-    /**
-     * Добавляет строки описания к существующему описанию.
-     *
-     * @param lore Строки описания для добавления
-     * @return Этот экземпляр ItemBuilder
-     */
     public ItemBuilder addLore(List<String> lore) {
         if (lore == null) {
             return this;
@@ -624,12 +440,6 @@ public class ItemBuilder {
         return meta(meta);
     }
 
-    /**
-     * Добавляет компоненты описания к существующему описанию.
-     *
-     * @param lore Компоненты описания для добавления
-     * @return Этот экземпляр ItemBuilder
-     */
     public ItemBuilder addLore(Component... lore) {
         if (lore == null) {
             return this;
@@ -638,12 +448,6 @@ public class ItemBuilder {
         return addComponentLore(Arrays.asList(lore));
     }
 
-    /**
-     * Добавляет список Adventure Component к существующему описанию.
-     *
-     * @param lore Компоненты описания для добавления
-     * @return Этот экземпляр ItemBuilder
-     */
     public ItemBuilder addComponentLore(List<Component> lore) {
         ItemMeta meta = meta();
         if (meta == null || lore == null) {
@@ -657,12 +461,6 @@ public class ItemBuilder {
         return meta(meta);
     }
 
-    /**
-     * Добавляет строки описания перед существующим описанием.
-     *
-     * @param lore Строки описания для добавления в начало
-     * @return Этот экземпляр ItemBuilder
-     */
     public ItemBuilder addLoreAbove(String... lore) {
         if (lore == null) {
             return this;
@@ -681,12 +479,6 @@ public class ItemBuilder {
         return meta(meta);
     }
 
-    /**
-     * Добавляет компоненты описания перед существующим описанием.
-     *
-     * @param lore Компоненты описания для добавления в начало
-     * @return Этот экземпляр ItemBuilder
-     */
     public ItemBuilder addLoreAbove(Component... lore) {
         if (lore == null) {
             return this;
@@ -695,12 +487,6 @@ public class ItemBuilder {
         return addComponentLoreAbove(Arrays.asList(lore));
     }
 
-    /**
-     * Добавляет список Adventure Component перед существующим описанием.
-     *
-     * @param lore Компоненты описания для добавления в начало
-     * @return Этот экземпляр ItemBuilder
-     */
     public ItemBuilder addComponentLoreAbove(List<Component> lore) {
         ItemMeta meta = meta();
         if (meta == null || lore == null) {
@@ -714,12 +500,6 @@ public class ItemBuilder {
         return meta(meta);
     }
 
-    /**
-     * Устанавливает цвет для предметов кожаной брони или зелий.
-     *
-     * @param color Цвет для установки
-     * @return Этот экземпляр ItemBuilder
-     */
     public ItemBuilder color(Color color) {
         ItemMeta meta = meta();
         if (meta == null || color == null) return this;
@@ -731,39 +511,18 @@ public class ItemBuilder {
         return meta(meta);
     }
 
-    /**
-     * Скрывает атрибуты предмета.
-     *
-     * @return Этот экземпляр ItemBuilder
-     */
     public ItemBuilder hideAttributes() {
         return flags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_DYE, ItemFlag.HIDE_POTION_EFFECTS);
     }
 
-    /**
-     * Скрывает зачарования предмета.
-     *
-     * @return Этот экземпляр ItemBuilder
-     */
     public ItemBuilder hideEnchants() {
         return flags(ItemFlag.HIDE_ENCHANTS);
     }
 
-    /**
-     * Скрывает эффекты предмета.
-     *
-     * @return Этот экземпляр ItemBuilder
-     */
     public ItemBuilder hideEffects() {
         return flags(ItemFlag.HIDE_POTION_EFFECTS);
     }
 
-    /**
-     * Устанавливает, является ли предмет неразрушаемым.
-     *
-     * @param unbreakable Флаг неразрушаемости
-     * @return Этот экземпляр ItemBuilder
-     */
     public ItemBuilder unbreakable(boolean unbreakable) {
         ItemMeta meta = meta();
         if (meta == null) return this;
@@ -771,52 +530,24 @@ public class ItemBuilder {
         return meta(meta);
     }
 
-    /**
-     * Устанавливает количество предметов в стеке.
-     *
-     * @param amount Количество для установки
-     * @return Этот экземпляр ItemBuilder
-     */
     public ItemBuilder amount(int amount) {
         item.setAmount(Math.max(1, Math.min(amount, item.getMaxStackSize())));
         return this;
     }
 
-    /**
-     * Устанавливает материал предмета.
-     *
-     * @param material Материал для установки
-     * @return Этот экземпляр ItemBuilder
-     */
     public ItemBuilder material(Material material) {
         item.setType(material != null ? material : Material.AIR);
         return this;
     }
 
-    /**
-     * Получает текущий материал предмета.
-     *
-     * @return Текущий Material
-     */
     public Material material() {
         return item.getType();
     }
 
-    /**
-     * Получает текущее количество предметов в стеке.
-     *
-     * @return Текущее количество
-     */
     public int amount() {
         return item.getAmount();
     }
 
-    /**
-     * Применяет эффект свечения к предмету.
-     *
-     * @param isGlow Флаг применения эффекта свечения
-     * @return Этот экземпляр ItemBuilder
-     */
     public ItemBuilder glow(boolean isGlow) {
         ItemMeta meta = meta();
         if (meta == null) {
@@ -839,16 +570,6 @@ public class ItemBuilder {
         return hideEnchants();
     }
 
-    /**
-     * Добавляет пару ключ-значение постоянных данных к предмету.
-     *
-     * @param key   NamespacedKey для данных
-     * @param type  Тип постоянных данных
-     * @param value Значение для установки
-     * @param <T>   Примитивный тип
-     * @param <Z>   Сложный тип
-     * @return Этот экземпляр ItemBuilder
-     */
     public <T, Z> ItemBuilder namespacedKey(NamespacedKey key, PersistentDataType<T, Z> type, Z value) {
         ItemMeta meta = meta();
         if (meta == null || key == null || type == null || value == null) return this;
@@ -856,42 +577,18 @@ public class ItemBuilder {
         return meta(meta);
     }
 
-    /**
-     * Получает значение постоянных данных предмета.
-     *
-     * @param key  NamespacedKey для запроса
-     * @param type Тип постоянных данных
-     * @param <T>  Примитивный тип
-     * @param <Z>  Сложный тип
-     * @return Значение или null, если не найдено
-     */
     public <T, Z> Z getNamespacedKey(NamespacedKey key, PersistentDataType<T, Z> type) {
         ItemMeta meta = meta();
         if (meta == null || key == null || type == null) return null;
         return meta.getPersistentDataContainer().get(key, type);
     }
 
-    /**
-     * Проверяет, есть ли ключ постоянных данных.
-     *
-     * @param key  NamespacedKey для проверки
-     * @param type Тип постоянных данных
-     * @param <T>  Примитивный тип
-     * @param <Z>  Сложный тип
-     * @return True, если ключ существует, иначе false
-     */
     public <T, Z> boolean hasNamespacedKey(NamespacedKey key, PersistentDataType<T, Z> type) {
         ItemMeta meta = meta();
         if (meta == null || key == null || type == null) return false;
         return meta.getPersistentDataContainer().has(key, type);
     }
 
-    /**
-     * Удаляет ключ постоянных данных из предмета.
-     *
-     * @param key NamespacedKey для удаления
-     * @return Этот экземпляр ItemBuilder
-     */
     public ItemBuilder removeNamespacedKey(NamespacedKey key) {
         ItemMeta meta = meta();
         if (meta == null || key == null) return this;
@@ -899,12 +596,6 @@ public class ItemBuilder {
         return meta(meta);
     }
 
-    /**
-     * Сохраняет свойства предмета в секцию конфигурации.
-     *
-     * @param section Секция конфигурации для сохранения
-     * @return Этот экземпляр ItemBuilder
-     */
     public ItemBuilder save(ConfigurationSection section) {
         if (section == null) return this;
 
@@ -975,17 +666,9 @@ public class ItemBuilder {
         return this;
     }
 
-    /**
-     * Создаёт и возвращает финальный ItemStack.
-     *
-     * @return Клонированный ItemStack со всеми модификациями
-     */
     public ItemStack build() {
         return item.clone();
     }
 
-    /**
-     * Запись для хранения данных атрибута.
-     */
     public static record AttributeData(EquipmentSlot slot, Attribute attribute, double value) {}
 }
