@@ -5,6 +5,11 @@ ml_check:
   enable: true
   # URL inference API.
   analyze_server: https://api.gloomai.pro/v1/inference
+  # Адрес личного кабинета для команды /gloom connect.
+  panel_url: https://gloomai.pro
+  # Постоянный API-ключ. Команда /gloom connect <код> сохраняет его автоматически.
+  # Одноразовый код из кабинета вводите в команду, а не в этот параметр.
+  license_key: ""
   # Количество кадров в одном временном окне модели.
   sequence: 50
   # Количество кадров между соседними запросами.

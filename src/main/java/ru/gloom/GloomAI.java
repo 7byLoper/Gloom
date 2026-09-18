@@ -89,7 +89,7 @@ public class GloomAI extends JavaPlugin {
 
         this.aiResultManager = new AIResultManager();
         this.analyzeBatchDispatcher = new AnalyzeBatchDispatcher(
-                this, checksConfigManager::getAnalyzeServer);
+                this, checksConfigManager::getAnalyzeServer, checksConfigManager::getLicenseKey);
         this.analyzeBatchDispatcher.start();
         this.analyzeService = new FlatBufferAnalyzeService(checksConfigManager, analyzeBatchDispatcher);
         this.alertManager = new AlertManager(mainConfigManager);

@@ -25,6 +25,20 @@ history-no-data: '{prefix} &#F3F3F3Нет данных истории для и�
 reloading: '{prefix} &#F3F3F3Перезагрузка конфигурации...'
 reloaded: '{prefix} &#F3F3F3Конфигурация успешно перезагружена...'
 
+connect:
+  status_missing: '{prefix} &eAPI-ключ не задан. Получите код на gloomai.pro.'
+  status_saved: '{prefix} &aAPI-ключ сохранён. Доступ к API проверяется при анализе игроков.'
+  usage: '{prefix} &eИспользование: /gloom connect <код или API-ключ> | status'
+  invalid_panel_url: '{prefix} &cУкажите корректный HTTPS-адрес ml_check.panel_url.'
+  already_connecting: '{prefix} &eПодключение уже выполняется.'
+  connecting: '{prefix} &eПодключаю сервер к кабинету...'
+  network_error: '{prefix} &cНе удалось связаться с сайтом. Повторите подключение позже.'
+  rate_limited: '{prefix} &cСлишком много попыток. Подождите 15 минут.'
+  rejected: '{prefix} &cКлюч или код недействителен, IP не разрешён или достигнут лимит IP. Проверьте кабинет.'
+  success: '{prefix} &aСервер подключён. API-ключ сохранён, перезапуск не требуется.'
+  save_error: '{prefix} &cНе удалось сохранить конфиг. Проверьте права на checks.yml и создайте новый код.'
+  invalid_response: '{prefix} &cСайт вернул некорректный ответ. Создайте новый код и повторите попытку.'
+
 monitor:
   action_bar:
     format: "{probability_color}&l{probability}% &8• {trend} &8• &#F6D443{buffer}"

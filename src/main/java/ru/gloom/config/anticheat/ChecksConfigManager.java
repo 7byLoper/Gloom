@@ -17,6 +17,8 @@ public class ChecksConfigManager extends ConfigManager {
     private long combatTimer;
 
     private String analyzeServer;
+    private volatile String licenseKey;
+    private String panelUrl;
     private WorldGuardRegionBypassService worldGuardRegionBypassService;
 
     public ChecksConfigManager(Plugin plugin) {
@@ -38,12 +40,27 @@ public class ChecksConfigManager extends ConfigManager {
         combatTimer = checksConfig.getInt("combat", 5) * 50L;
 
         analyzeServer = checksConfig.getString("ml_check.analyze_server", "https://api.gloom.net/v1/inference");
+        licenseKey = checksConfig.getString("ml_check.license_key", "");
+        panelUrl = checksConfig.getString("ml_check.panel_url", "https://gloomai.pro");
         worldGuardRegionBypassService = new WorldGuardRegionBypassService(
                 plugin, WorldGuardRegionBypassConfig.fromConfig(checksConfig, "ml_check.worldguard"));
     }
 
     public CustomConfig getChecksConfig() {
         return super.getCustomConfig("anticheat/checks.yml");
+    }
+
+    public void saveLicenseKey(String key) throws java.io.IOException {
+        CustomConfig config = getChecksConfig();
+        Object previous = config.getConfig().get("ml_check.license_key");
+        config.getConfig().set("ml_check.license_key", key);
+        try {
+            config.getConfig().save(config.getFile());
+            licenseKey = key;
+        } catch (java.io.IOException exception) {
+            config.getConfig().set("ml_check.license_key", previous);
+            throw exception;
+        }
     }
 
     public boolean isAimAiBypassedInRegion(Player player) {

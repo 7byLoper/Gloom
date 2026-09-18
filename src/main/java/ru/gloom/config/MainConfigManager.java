@@ -43,6 +43,19 @@ public class MainConfigManager extends ConfigManager {
     private String reloadingMessage;
     private String reloadedMessage;
 
+    private String connectStatusMissingMessage;
+    private String connectStatusSavedMessage;
+    private String connectUsageMessage;
+    private String connectInvalidPanelUrlMessage;
+    private String connectAlreadyConnectingMessage;
+    private String connectConnectingMessage;
+    private String connectNetworkErrorMessage;
+    private String connectRateLimitedMessage;
+    private String connectRejectedMessage;
+    private String connectSuccessMessage;
+    private String connectSaveErrorMessage;
+    private String connectInvalidResponseMessage;
+
     private String monitorActionBarFormat;
     private String monitorWaitingFormat;
     private String monitorTrendUpFormat;
@@ -162,6 +175,42 @@ public class MainConfigManager extends ConfigManager {
                 .replace("{prefix}", prefix);
         reloadedMessage = messagesConfig
                 .getString("reloaded", "{prefix} &fКонфигурация успешно перезагружена...")
+                .replace("{prefix}", prefix);
+        connectStatusMissingMessage = messagesConfig
+                .getString("connect.status_missing", "{prefix} &eAPI-ключ не задан. Получите код на gloomai.pro.")
+                .replace("{prefix}", prefix);
+        connectStatusSavedMessage = messagesConfig
+                .getString("connect.status_saved", "{prefix} &aAPI-ключ сохранён. Доступ к API проверяется при анализе игроков.")
+                .replace("{prefix}", prefix);
+        connectUsageMessage = messagesConfig
+                .getString("connect.usage", "{prefix} &eИспользование: /gloom connect <код или API-ключ> | status")
+                .replace("{prefix}", prefix);
+        connectInvalidPanelUrlMessage = messagesConfig
+                .getString("connect.invalid_panel_url", "{prefix} &cУкажите корректный HTTPS-адрес ml_check.panel_url.")
+                .replace("{prefix}", prefix);
+        connectAlreadyConnectingMessage = messagesConfig
+                .getString("connect.already_connecting", "{prefix} &eПодключение уже выполняется.")
+                .replace("{prefix}", prefix);
+        connectConnectingMessage = messagesConfig
+                .getString("connect.connecting", "{prefix} &eПодключаю сервер к кабинету...")
+                .replace("{prefix}", prefix);
+        connectNetworkErrorMessage = messagesConfig
+                .getString("connect.network_error", "{prefix} &cНе удалось связаться с сайтом. Повторите подключение позже.")
+                .replace("{prefix}", prefix);
+        connectRateLimitedMessage = messagesConfig
+                .getString("connect.rate_limited", "{prefix} &cСлишком много попыток. Подождите 15 минут.")
+                .replace("{prefix}", prefix);
+        connectRejectedMessage = messagesConfig
+                .getString("connect.rejected", "{prefix} &cКлюч или код недействителен, IP не разрешён или достигнут лимит IP. Проверьте кабинет.")
+                .replace("{prefix}", prefix);
+        connectSuccessMessage = messagesConfig
+                .getString("connect.success", "{prefix} &aСервер подключён. API-ключ сохранён, перезапуск не требуется.")
+                .replace("{prefix}", prefix);
+        connectSaveErrorMessage = messagesConfig
+                .getString("connect.save_error", "{prefix} &cНе удалось сохранить конфиг. Проверьте права на checks.yml и создайте новый код.")
+                .replace("{prefix}", prefix);
+        connectInvalidResponseMessage = messagesConfig
+                .getString("connect.invalid_response", "{prefix} &cСайт вернул некорректный ответ. Создайте новый код и повторите попытку.")
                 .replace("{prefix}", prefix);
 
         monitorActionBarFormat = messagesConfig

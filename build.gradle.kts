@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "ru.gloom"
-version = "1.0.3-RELEASE"
+version = "1.0.0"
 
 repositories {
     exclusiveContent {

@@ -3,7 +3,7 @@
   <p>AI-античит для Minecraft-серверов с анализом aim-поведения через внешний inference API.</p>
 
   <p>
-    <img alt="Minecraft" src="https://img.shields.io/badge/Minecraft-1.20.1+-62B47A?style=flat">
+    <img alt="Minecraft" src="https://img.shields.io/badge/Minecraft-1.16.5--1.21.11-62B47A?style=flat">
     <img alt="Java" src="https://img.shields.io/badge/Java-17+-E76F00?style=flat&logo=openjdk&logoColor=white">
     <img alt="Paper" src="https://img.shields.io/badge/Paper-supported-222222?style=flat">
     <img alt="License" src="https://img.shields.io/badge/License-GPL--3.0-blue?style=flat">
@@ -53,7 +53,7 @@ ml_check:
 ## Требования
 
 - Java 17+
-- Paper 1.20.1+
+- Paper или Spigot 1.16.5 - 1.21.11
 - PacketEvents
 - WorldGuard опционально, если нужны bypass-настройки для регионов
 - Redis опционально, если нужна синхронизация между серверами
@@ -81,6 +81,18 @@ ml_check:
 | `/gloom monitor [player]` | `gloom.command.monitor` | Запускает монитор данных игрока |
 | `/gloom monitor stop` | `gloom.command.monitor` | Останавливает текущий монитор |
 | `/gloom reload` | `gloom.command.reload` | Перезагружает конфигурацию |
+| `/gloom connect <код или API-ключ>` | `gloom.command.connect` | Подключает сервер и сохраняет постоянный API-ключ |
+| `/gloom connect status` | `gloom.command.connect` | Показывает, задан ли API-ключ |
+
+В личном кабинете откройте сервер и нажмите «Сгенерировать код», затем выполните
+`/gloom connect <код>` в консоли или от имени администратора. Код действует 15 минут
+и используется один раз. API-ключ сохранится в `anticheat/checks.yml` автоматически.
+Перевыпуск ключа в кабинете отзывает предыдущий; после него подключите плагин снова.
+API проверяет и ключ, и разрешённый внешний IP сервера. При подключении по коду
+IP добавляется автоматически, если не достигнут лимит трёх адресов. Списком IP можно
+управлять в кабинете; удаление адреса сразу закрывает доступ с него.
+Сообщения команды подключения настраиваются в разделе `connect` файла
+`translation.yml`. Изменения применяются командой `/gloom reload`.
 
 Базовое право для основной команды:
 

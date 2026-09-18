@@ -11,6 +11,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -94,28 +95,38 @@ public final class TargetEntityIndex {
         }
 
         UUID uuid = entity.getUniqueId();
+        int entityId = entity.getEntityId();
         uuidToEntity.remove(uuid);
-        entityIdToUuid.remove(entity.getEntityId());
 
-        UUID mappedUuid = entityIdToUuid.get(entity.getEntityId());
+        UUID mappedUuid = entityIdToUuid.get(entityId);
         if (uuid.equals(mappedUuid)) {
-            entityIdToUuid.remove(entity.getEntityId());
+            entityIdToUuid.remove(entityId);
         }
     }
 
     public @Nullable Entity getByEntityId(int entityId) {
         UUID uuid = entityIdToUuid.get(entityId);
         if (uuid == null) {
-            return null;
+            return findOnlinePlayer(entityId);
         }
 
         Entity entity = uuidToEntity.get(uuid);
         if (!isUsable(entity, entityId, uuid)) {
             remove(entityId, uuid);
-            return null;
+            return findOnlinePlayer(entityId);
         }
 
         return entity;
+    }
+
+    private @Nullable Player findOnlinePlayer(int entityId) {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            if (player.getEntityId() == entityId) {
+                track(player);
+                return player;
+            }
+        }
+        return null;
     }
 
     public @Nullable Entity getByUniqueId(@Nullable UUID uuid) {

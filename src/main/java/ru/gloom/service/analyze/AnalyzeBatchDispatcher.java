@@ -31,6 +31,7 @@ public final class AnalyzeBatchDispatcher {
 
     private final Plugin plugin;
     private final Supplier<String> endpointSupplier;
+    private final Supplier<String> licenseKeySupplier;
     private final HttpClient httpClient;
 
     private final ConcurrentLinkedQueue<PendingAnalyze> queue = new ConcurrentLinkedQueue<>();
@@ -45,9 +46,10 @@ public final class AnalyzeBatchDispatcher {
     private volatile boolean stopped;
 
     public AnalyzeBatchDispatcher(
-            Plugin plugin, Supplier<String> endpointSupplier) {
+            Plugin plugin, Supplier<String> endpointSupplier, Supplier<String> licenseKeySupplier) {
         this.plugin = plugin;
         this.endpointSupplier = endpointSupplier;
+        this.licenseKeySupplier = licenseKeySupplier;
         this.httpClient = HttpClient.newBuilder()
                 .version(HttpClient.Version.HTTP_2)
                 .connectTimeout(Duration.ofSeconds(10))
@@ -69,6 +71,11 @@ public final class AnalyzeBatchDispatcher {
         flusher.shutdownNow();
         queue.clear();
         queueSize.set(0);
+    }
+
+    public void retryNow() {
+        retryAfterMillis.set(0);
+        unavailableReported.set(false);
     }
 
     public void enqueue(byte[] payload, DoubleConsumer resultConsumer, BooleanSupplier valid) {
@@ -160,13 +167,17 @@ public final class AnalyzeBatchDispatcher {
             return;
         }
         byte[] body = encodeFraming(batch);
-        HttpRequest request = HttpRequest.newBuilder(endpoint)
+        HttpRequest.Builder builder = HttpRequest.newBuilder(endpoint)
                 .header("Content-Type", "application/x-flatbuffers")
                 .header("Accept", "application/x-flatbuffers")
                 .header("X-Batch", "1")
                 .timeout(REQUEST_TIMEOUT)
-                .POST(HttpRequest.BodyPublishers.ofByteArray(body))
-                .build();
+                .POST(HttpRequest.BodyPublishers.ofByteArray(body));
+        String licenseKey = licenseKeySupplier == null ? null : licenseKeySupplier.get();
+        if (licenseKey != null && !licenseKey.isBlank()) {
+            builder.header("X-License-Key", licenseKey.strip());
+        }
+        HttpRequest request = builder.build();
 
         httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).whenComplete((response, throwable) -> {
             try {

@@ -21,6 +21,7 @@ public class GloomCommand extends BaseCommandExecutor {
         addSubCommand(new HistorySubCommand());
         addSubCommand(new MenuSubCommand());
         addSubCommand(new ReloadSubCommand());
+        addSubCommand(new ConnectSubCommand());
         addSubCommand(new MonitorSubCommand());
         addSubCommand(new DataCollectSubCommand());
     }
