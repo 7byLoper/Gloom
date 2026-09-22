@@ -17,6 +17,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 import ru.gloom.GloomAI;
+import ru.gloom.utils.MessageUtils;
 import ru.gloom.config.anticheat.HologramConfigManager;
 import ru.gloom.manager.anticheat.PlayerAnalysisSnapshot;
 
@@ -75,7 +76,8 @@ public final class HologramManager {
         }
 
         if (!silent && viewer != null && viewer.isOnline()) {
-            viewer.sendMessage(
+            MessageUtils.send(
+                    viewer,
                     enabled
                             ? GloomAI.INSTANCE.getMainConfigManager().getHologramsEnabledMessage()
                             : GloomAI.INSTANCE.getMainConfigManager().getHologramsDisableMessage());

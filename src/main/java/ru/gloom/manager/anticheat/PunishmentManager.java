@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import org.bukkit.Bukkit;
 import ru.gloom.GloomAI;
 import ru.gloom.checks.Check;
+import ru.gloom.checks.impl.ai.RotationAimCheck;
 import ru.gloom.config.anticheat.PunishmentConfigManager;
 
 public final class PunishmentManager {
@@ -88,45 +89,32 @@ public final class PunishmentManager {
         String trimmedAction = action.trim();
 
         switch (trimmedAction.toLowerCase(Locale.ROOT)) {
-            case "[alert]" -> executeAlert(check, verbose);
+            case "[alert]" -> executeAlert(check, verbose, aiProbability);
             case "[log]" -> executeLog(check, verbose);
-            case "[ai_alert]" -> executeAiAlert(check, aiProbability);
             default ->
                 executeConsoleCommand(trimmedAction, check, verbose, aiProbability, checkViolations, totalViolations);
         }
     }
 
     public void executeAlert(Check check, String verbose) {
-        String alertMessage = GloomAI.INSTANCE
-                .getMainConfigManager()
-                .getAlertMessage()
-                .replace("{check_name}", check.getCheckName())
-                .replace("{player}", check.getPlayer().getName())
-                .replace("{verbose}", verbose)
-                .replace("{vl}", String.valueOf((int) check.getViolations()));
+        executeAlert(check, verbose, -1.0D);
+    }
+
+    private void executeAlert(Check check, String verbose, double aiProbability) {
+        int violations = (int) check.getViolations();
+        String alertMessage = applyPlaceholders(
+                GloomAI.INSTANCE.getMainConfigManager().getAlertMessage(),
+                check,
+                verbose,
+                aiProbability,
+                violations,
+                violations);
 
         GloomAI.INSTANCE.getAlertManager().sendAlert(alertMessage);
     }
 
     private void executeLog(Check check, String verbose) {
         GloomAI.INSTANCE.getViolationManager().logAlert(check, verbose);
-    }
-
-    private void executeAiAlert(Check check, double aiProbability) {
-        if (aiProbability < 0.0D) {
-            return;
-        }
-
-        String probabilityString = GloomAI.INSTANCE.getMainConfigManager().getChanceString(aiProbability);
-
-        String message = GloomAI.INSTANCE
-                .getMainConfigManager()
-                .getAiAlertMessage()
-                .replace("{player}", check.getPlayer().getName())
-                .replace("{vl}", String.valueOf((int) check.getViolations()))
-                .replace("{probability}", probabilityString);
-
-        GloomAI.INSTANCE.getAlertManager().sendAlert(message);
     }
 
     private void executeConsoleCommand(
@@ -152,10 +140,18 @@ public final class PunishmentManager {
         String probabilityString = aiProbability < 0.0D
                 ? "0.0000"
                 : GloomAI.INSTANCE.getMainConfigManager().getChanceString(aiProbability);
+        String modelName = check.getDisplayName();
+        String buffer = "0.00";
+        if (check instanceof RotationAimCheck rotationAimCheck) {
+            modelName = rotationAimCheck.getEffectiveModel();
+            buffer = String.format(Locale.US, "%.2f", rotationAimCheck.getBuffer());
+        }
 
         return template.replace("{player}", check.getPlayer().getName())
                 .replace("{check}", check.getCheckName())
                 .replace("{check_name}", check.getCheckName())
+                .replace("{model}", modelName)
+                .replace("{buffer}", buffer)
                 .replace("{verbose}", verbose)
                 .replace("{vl}", String.valueOf((int) check.getViolations()))
                 .replace("{violations}", String.valueOf(checkViolations))

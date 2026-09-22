@@ -38,11 +38,19 @@ public abstract class BaseCommandExecutor extends SmartCommandExecutor {
         }
 
         if (args.length == 0) {
+            String msg = handleNoArguments(sender);
+            if (msg != null && !msg.isEmpty()) {
+                sender.sendMessage(msg);
+            }
             return true;
         }
 
         BuildableCommandWrapper subCommand = getCommandByLabel(args[0]);
         if (subCommand == null) {
+            String msg = handleNoArguments(sender);
+            if (msg != null && !msg.isEmpty()) {
+                sender.sendMessage(msg);
+            }
             return true;
         }
 

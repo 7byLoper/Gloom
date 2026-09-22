@@ -12,6 +12,9 @@ public class StringColorize {
 
     private static final char COLOR_CHAR = '&';
 
+    private static final Pattern GRADIENT_PATTERN = Pattern.compile(
+            "<gradient:(#[a-fA-F0-9]{6}|[a-fA-F0-9]{6}):(#[a-fA-F0-9]{6}|[a-fA-F0-9]{6})(?::(&[0-9a-fk-orA-FK-OR]+))?>(.*?)</gradient>"
+    );
     private static final Pattern AMP_HEX_PATTERN = Pattern.compile("&#([a-fA-F0-9]{6})");
     private static final Pattern MC_HEX_PATTERN = Pattern.compile("§x(§[a-fA-F0-9]){6}");
     private static final Pattern CLEAN_HEX_PATTERN = Pattern.compile("^[a-fA-F0-9]{6}$");
@@ -21,7 +24,8 @@ public class StringColorize {
             return message;
         }
 
-        String withHex = replaceAmpHex(message);
+        String withGradients = replaceGradients(message);
+        String withHex = replaceAmpHex(withGradients);
         return ChatColor.translateAlternateColorCodes(COLOR_CHAR, withHex);
     }
 
@@ -81,6 +85,32 @@ public class StringColorize {
 
     public String generateGradientString(String text, String startColorHex, String endColorHex) {
         return generateGradientString(text, startColorHex, endColorHex, null);
+    }
+
+    private String replaceGradients(String message) {
+        if (message == null || !message.contains("<gradient:")) {
+            return message;
+        }
+
+        Matcher matcher = GRADIENT_PATTERN.matcher(message);
+        if (!matcher.find()) {
+            return message;
+        }
+
+        matcher.reset();
+        StringBuilder builder = new StringBuilder(message.length());
+        while (matcher.find()) {
+            String startHex = matcher.group(1);
+            String endHex = matcher.group(2);
+            String extra = matcher.group(3);
+            String text = matcher.group(4);
+            matcher.appendReplacement(
+                    builder,
+                    Matcher.quoteReplacement(generateGradientString(text, startHex, endHex, extra))
+            );
+        }
+        matcher.appendTail(builder);
+        return builder.toString();
     }
 
     private String replaceAmpHex(String message) {

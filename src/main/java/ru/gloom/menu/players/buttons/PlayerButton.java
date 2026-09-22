@@ -14,6 +14,7 @@ import ru.gloom.menu.history.HistoryMenu;
 import ru.gloom.menu.players.PlayersMenu;
 import ru.gloom.menu.players.PlayersMenuPlaceholders;
 import ru.gloom.utils.ItemPlaceholderUtils;
+import ru.gloom.utils.MessageUtils;
 import ru.gloom.utils.StringColorize;
 
 public class PlayerButton extends Button {
@@ -76,8 +77,7 @@ public class PlayerButton extends Button {
         }
 
         if (action.startsWith("[message]")) {
-            player.sendMessage(
-                    StringColorize.parse(action.substring("[message]".length()).trim()));
+            MessageUtils.send(player, StringColorize.parse(action.substring("[message]".length()).trim()));
             return;
         }
         if (action.startsWith("[console]")) {

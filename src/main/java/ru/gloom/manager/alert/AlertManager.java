@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import ru.gloom.config.MainConfigManager;
+import ru.gloom.utils.MessageUtils;
 
 @RequiredArgsConstructor
 public class AlertManager {
@@ -22,7 +23,7 @@ public class AlertManager {
     }
 
     public boolean hasVerboseEnabled(@NonNull UUID uniqueId) {
-        return verbosePlayers.contains(uniqueId);
+        return configManager.isTestMode() && verbosePlayers.contains(uniqueId);
     }
 
     public boolean toggleAlerts(@NonNull UUID uniqueId, boolean silent) {
@@ -41,13 +42,24 @@ public class AlertManager {
         if (!silent) {
             Player player = Bukkit.getPlayer(uniqueId);
             if (player != null && player.isOnline()) {
-                player.sendMessage(
+                MessageUtils.send(
+                        player,
                         enabled ? configManager.getAlertsEnabledMessage() : configManager.getAlertsDisableMessage());
             }
         }
     }
 
     public boolean toggleVerbose(@NonNull UUID uniqueId, boolean silent) {
+        if (!configManager.isTestMode()) {
+            if (!silent) {
+                Player player = Bukkit.getPlayer(uniqueId);
+                if (player != null && player.isOnline()) {
+                    MessageUtils.send(player, configManager.getVerboseTestModeOnlyMessage());
+                }
+            }
+            return false;
+        }
+
         boolean newState = !hasVerboseEnabled(uniqueId);
         setVerboseEnabled(uniqueId, newState, silent);
         return newState;
@@ -55,6 +67,15 @@ public class AlertManager {
 
     public void setVerboseEnabled(@NonNull UUID uniqueId, boolean enabled, boolean silent) {
         if (enabled) {
+            if (!configManager.isTestMode()) {
+                if (!silent) {
+                    Player player = Bukkit.getPlayer(uniqueId);
+                    if (player != null && player.isOnline()) {
+                        MessageUtils.send(player, configManager.getVerboseTestModeOnlyMessage());
+                    }
+                }
+                return;
+            }
             verbosePlayers.add(uniqueId);
         } else {
             verbosePlayers.remove(uniqueId);
@@ -63,7 +84,8 @@ public class AlertManager {
         if (!silent) {
             Player player = Bukkit.getPlayer(uniqueId);
             if (player != null && player.isOnline()) {
-                player.sendMessage(
+                MessageUtils.send(
+                        player,
                         enabled ? configManager.getVerboseEnabledMessage() : configManager.getVerboseDisableMessage());
             }
         }
@@ -74,6 +96,10 @@ public class AlertManager {
     }
 
     public void sendAlert(@NonNull String message, Set<UUID> excludedPlayers) {
+        if (message.isBlank()) {
+            return;
+        }
+
         alertPlayers.stream()
                 .filter(uuid -> excludedPlayers == null || !excludedPlayers.contains(uuid))
                 .map(Bukkit::getPlayer)
@@ -90,6 +116,10 @@ public class AlertManager {
     }
 
     public Set<UUID> sendVerbose(@NonNull String message, Set<UUID> excludedPlayers) {
+        if (!configManager.isTestMode() || message.isBlank()) {
+            return Collections.emptySet();
+        }
+
         Set<UUID> receivers = verbosePlayers.stream()
                 .filter(uuid -> excludedPlayers == null || !excludedPlayers.contains(uuid))
                 .collect(Collectors.toSet());

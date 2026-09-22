@@ -79,12 +79,17 @@ public class CustomConfig {
     }
 
     public String configMessage(String path) {
-        return configMessage(path, "unknown config path: " + path);
+        String message = config.getString(path);
+        if (message == null || message.isBlank()) {
+            return "";
+        }
+
+        return StringColorize.parse(message);
     }
 
+    @Deprecated(forRemoval = false)
     public String configMessage(String path, String defaultValue) {
-        String message = config.getString(path, defaultValue);
-        return StringColorize.parse(message);
+        return configMessage(path);
     }
 
     public void setAndSave(String path, Object value) {

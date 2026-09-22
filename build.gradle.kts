@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "ru.gloom"
-version = "1.0.0"
+version = "1.0.1"
 
 repositories {
     exclusiveContent {
@@ -33,6 +33,7 @@ repositories {
 
 dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+    testImplementation("io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT")
     compileOnly("io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT")
 
     compileOnly(libs.lombok)

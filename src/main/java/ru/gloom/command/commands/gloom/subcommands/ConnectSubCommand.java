@@ -17,6 +17,7 @@ import ru.gloom.GloomAI;
 import ru.gloom.api.command.BuildableCommand;
 import ru.gloom.api.command.register.SubCommandRegister;
 import ru.gloom.config.MainConfigManager;
+import ru.gloom.utils.MessageUtils;
 
 @SubCommandRegister(permission = "gloom.command.connect", aliases = "connect")
 public final class ConnectSubCommand implements BuildableCommand {
@@ -29,13 +30,13 @@ public final class ConnectSubCommand implements BuildableCommand {
         GloomAI plugin = GloomAI.INSTANCE;
         MainConfigManager config = plugin.getMainConfigManager();
         if (args.length == 2 && args[1].equalsIgnoreCase("status")) {
-            sender.sendMessage(plugin.getChecksConfigManager().getLicenseKey().isBlank()
+            MessageUtils.send(sender, plugin.getChecksConfigManager().getLicenseKey().isBlank()
                     ? config.getConnectStatusMissingMessage()
                     : config.getConnectStatusSavedMessage());
             return;
         }
         if (args.length != 2 || !args[1].matches("(?:[A-Za-z0-9]{4}-[A-Za-z0-9]{4}-[A-Za-z0-9]{4}|gloom_[A-Za-z0-9_-]{43})")) {
-            sender.sendMessage(config.getConnectUsageMessage());
+            MessageUtils.send(sender, config.getConnectUsageMessage());
             return;
         }
         final HttpRequest request;
@@ -52,14 +53,14 @@ public final class ConnectSubCommand implements BuildableCommand {
                     .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(Map.of("credential", args[1]))))
                     .build();
         } catch (IllegalArgumentException exception) {
-            sender.sendMessage(config.getConnectInvalidPanelUrlMessage());
+            MessageUtils.send(sender, config.getConnectInvalidPanelUrlMessage());
             return;
         }
         if (!connecting.compareAndSet(false, true)) {
-            sender.sendMessage(config.getConnectAlreadyConnectingMessage());
+            MessageUtils.send(sender, config.getConnectAlreadyConnectingMessage());
             return;
         }
-        sender.sendMessage(config.getConnectConnectingMessage());
+        MessageUtils.send(sender, config.getConnectConnectingMessage());
         client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).whenComplete((response, failure) -> {
             connecting.set(false);
             if (!plugin.isEnabled()) {
@@ -67,11 +68,11 @@ public final class ConnectSubCommand implements BuildableCommand {
             }
             plugin.getServer().getScheduler().runTask(plugin, () -> {
                 if (failure != null) {
-                    sender.sendMessage(config.getConnectNetworkErrorMessage());
+                    MessageUtils.send(sender, config.getConnectNetworkErrorMessage());
                     return;
                 }
                 if (response.statusCode() != 200) {
-                    sender.sendMessage(response.statusCode() == 429
+                    MessageUtils.send(sender, response.statusCode() == 429
                             ? config.getConnectRateLimitedMessage()
                             : config.getConnectRejectedMessage());
                     return;
@@ -84,11 +85,11 @@ public final class ConnectSubCommand implements BuildableCommand {
                     }
                     plugin.getChecksConfigManager().saveLicenseKey(key);
                     plugin.getAnalyzeBatchDispatcher().retryNow();
-                    sender.sendMessage(config.getConnectSuccessMessage());
+                    MessageUtils.send(sender, config.getConnectSuccessMessage());
                 } catch (IOException exception) {
-                    sender.sendMessage(config.getConnectSaveErrorMessage());
+                    MessageUtils.send(sender, config.getConnectSaveErrorMessage());
                 } catch (RuntimeException exception) {
-                    sender.sendMessage(config.getConnectInvalidResponseMessage());
+                    MessageUtils.send(sender, config.getConnectInvalidResponseMessage());
                 }
             });
         });

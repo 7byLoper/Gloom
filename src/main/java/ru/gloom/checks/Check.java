@@ -1,6 +1,9 @@
 package ru.gloom.checks;
 
 import lombok.Getter;
+import org.bukkit.entity.Player;
+import org.bukkit.permissions.Permission;
+import org.bukkit.permissions.PermissionDefault;
 import org.jetbrains.annotations.NotNull;
 import ru.gloom.GloomAI;
 import ru.gloom.api.configuration.CustomConfig;
@@ -9,6 +12,8 @@ import ru.gloom.player.GloomPlayer;
 
 @Getter
 public class Check implements AbstractCheck {
+    private static final Permission BYPASS_PERMISSION = new Permission("gloom.bypass", PermissionDefault.FALSE);
+
     protected final @NotNull GloomPlayer player;
 
     protected double violations;
@@ -117,11 +122,22 @@ public class Check implements AbstractCheck {
         violations = Math.max(0D, violations - decay);
     }
 
+    public boolean isBypassed() {
+        Player bukkitPlayer = player.getBukkitPlayer();
+        return bukkitPlayer != null && bukkitPlayer.hasPermission(BYPASS_PERMISSION);
+    }
+
     protected boolean canFlag() {
+        if (isBypassed()) {
+            return false;
+        }
         return isEnabled() && !experimental;
     }
 
     protected boolean canAlert() {
+        if (isBypassed()) {
+            return false;
+        }
         return isEnabled();
     }
 

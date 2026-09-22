@@ -15,6 +15,7 @@ import ru.gloom.api.command.register.SubCommandRegister;
 import ru.gloom.database.model.PlayerAIProbabilityData;
 import ru.gloom.database.model.ViolationRecord;
 import ru.gloom.menu.history.HistoryMenu;
+import ru.gloom.utils.MessageUtils;
 
 @SubCommandRegister(permission = "gloom.command.history", aliases = "history")
 public class HistorySubCommand implements BuildableCommand {
@@ -48,7 +49,7 @@ public class HistorySubCommand implements BuildableCommand {
             int maxPages = (int) Math.ceil((double) count / limit);
 
             violationStorage.getViolations(uuid, page, limit).thenAccept(records -> {
-                sender.sendMessage(config.getHistoryHeaderMessage()
+                MessageUtils.send(sender, config.getHistoryHeaderMessage()
                         .replace("{player}", targetName)
                         .replace("{page}", String.valueOf(page + 1))
                         .replace("{max_pages}", String.valueOf(Math.max(maxPages, 1))));
@@ -56,7 +57,7 @@ public class HistorySubCommand implements BuildableCommand {
                 for (int i = records.size() - 1; i >= 0; i--) {
                     ViolationRecord record = records.get(i);
 
-                    sender.sendMessage(config.getHistoryEntryMessage()
+                    MessageUtils.send(sender, config.getHistoryEntryMessage()
                             .replace("{check_name}", record.checkName())
                             .replace("{vl}", String.valueOf(record.vls()))
                             .replace("{verbose}", record.verbose())
@@ -75,7 +76,7 @@ public class HistorySubCommand implements BuildableCommand {
         var config = GloomAI.INSTANCE.getMainConfigManager();
 
         if (!(sender instanceof Player player)) {
-            sender.sendMessage(config.getHistoryOnlyPlayerMessage());
+            MessageUtils.send(sender, config.getHistoryOnlyPlayerMessage());
             return;
         }
 
@@ -96,7 +97,7 @@ public class HistorySubCommand implements BuildableCommand {
             }
 
             if (playerData == null) {
-                player.sendMessage(config.getHistoryNoDataMessage().replace("{player}", targetName));
+                MessageUtils.send(player, config.getHistoryNoDataMessage().replace("{player}", targetName));
                 return;
             }
 

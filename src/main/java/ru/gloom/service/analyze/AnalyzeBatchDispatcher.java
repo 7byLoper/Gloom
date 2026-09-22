@@ -13,13 +13,18 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.DoubleConsumer;
 import java.util.function.BooleanSupplier;
+import java.util.function.DoubleConsumer;
 import java.util.function.Supplier;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 
 public final class AnalyzeBatchDispatcher {
+    @FunctionalInterface
+    public interface AnalyzeResultConsumer {
+        void accept(double probability, String modelName);
+    }
+
     private static final int MAX_BATCH_SIZE = 32;
     private static final long FLUSH_PERIOD_MS = 50L;
     private static final int BATCH_COUNT_SIZE = 2;
@@ -44,6 +49,7 @@ public final class AnalyzeBatchDispatcher {
 
     private final ScheduledExecutorService flusher;
     private volatile boolean stopped;
+    private volatile String lastModelName = "TCN";
 
     public AnalyzeBatchDispatcher(
             Plugin plugin, Supplier<String> endpointSupplier, Supplier<String> licenseKeySupplier) {
@@ -78,7 +84,25 @@ public final class AnalyzeBatchDispatcher {
         unavailableReported.set(false);
     }
 
+    public boolean isApiAvailable() {
+        return apiAvailable.get();
+    }
+
+    public String getLastModelName() {
+        return lastModelName;
+    }
+
+    public void setLastModelName(String modelName) {
+        if (modelName != null && !modelName.isBlank()) {
+            this.lastModelName = modelName;
+        }
+    }
+
     public void enqueue(byte[] payload, DoubleConsumer resultConsumer, BooleanSupplier valid) {
+        enqueue(payload, (probability, model) -> resultConsumer.accept(probability), valid);
+    }
+
+    public void enqueue(byte[] payload, AnalyzeResultConsumer resultConsumer, BooleanSupplier valid) {
         if (stopped || !valid.getAsBoolean()) {
             return;
         }
@@ -231,11 +255,26 @@ public final class AnalyzeBatchDispatcher {
         }
         markAvailable();
 
+        response.headers().firstValue("X-Model-Name").ifPresent(raw -> {
+            try {
+                String decoded = java.net.URLDecoder.decode(raw, java.nio.charset.StandardCharsets.UTF_8);
+                if (!decoded.isBlank()) {
+                    this.lastModelName = decoded;
+                }
+            } catch (Exception ignored) {
+                if (!raw.isBlank()) {
+                    this.lastModelName = raw;
+                }
+            }
+        });
+
+        final String currentModel = (lastModelName != null && !lastModelName.isBlank()) ? lastModelName : "TCN";
+
         Bukkit.getScheduler().runTask(plugin, () -> {
             for (int i = 0; i < batch.size(); i++) {
                 PendingAnalyze item = batch.get(i);
                 if (item.isCurrent() && Double.isFinite(probabilities[i])) {
-                    item.resultConsumer.accept(probabilities[i]);
+                    item.resultConsumer.accept(probabilities[i], currentModel);
                 }
             }
         });
@@ -333,7 +372,7 @@ public final class AnalyzeBatchDispatcher {
         return message == null || message.isBlank() ? throwable.getClass().getSimpleName() : message;
     }
 
-    private record PendingAnalyze(byte[] payload, DoubleConsumer resultConsumer, long createdAtNanos, BooleanSupplier valid) {
+    private record PendingAnalyze(byte[] payload, AnalyzeResultConsumer resultConsumer, long createdAtNanos, BooleanSupplier valid) {
         boolean isCurrent() {
             return System.nanoTime() - createdAtNanos <= 5_000_000_000L && valid.getAsBoolean();
         }

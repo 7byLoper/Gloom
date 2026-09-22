@@ -18,6 +18,7 @@ public class MainConfigManager extends ConfigManager {
     private RedisConfig redisConfig;
 
     private boolean printToConsole;
+    private boolean testMode;
     private int historyEntryPerPage;
     private int maxProbEntries;
 
@@ -30,10 +31,26 @@ public class MainConfigManager extends ConfigManager {
     private String hologramsEnabledMessage;
     private String hologramsDisableMessage;
 
-    private String aiAlertMessage;
-    private String aiVerboseMessage;
+    private String helpHeaderMessage;
+    private String helpFormatMessage;
+    private String helpFooterMessage;
+
+    private String statusHeaderMessage;
+    private String statusBackendMessage;
+    private String statusModelMessage;
+    private String statusRequestsTodayMessage;
+    private String statusRequestsRemainingMessage;
+    private String statusPlanMessage;
+    private String statusCheckingMessage;
+    private String statusConnectedText;
+    private String statusNotConnectedText;
+    private String statusNoLicenseMessage;
+    private String statusErrorMessage;
+    private String statusUnlimitedText;
+
     private String alertMessage;
     private String verboseMessage;
+    private String verboseTestModeOnlyMessage;
 
     private String historyHeaderMessage;
     private String historyEntryMessage;
@@ -96,6 +113,7 @@ public class MainConfigManager extends ConfigManager {
         redisConfig = RedisConfig.fromSection(settings.getConfigurationSection("redis"));
 
         printToConsole = settings.getBoolean("print_to_console", false);
+        testMode = settings.getBoolean("test_mode", false);
         historyEntryPerPage = settings.getInt("history_entries_per_page", 15);
 
         maxLocalEntries = settings.getInt("max_local_entries", 20);
@@ -113,145 +131,70 @@ public class MainConfigManager extends ConfigManager {
         }
 
         CustomConfig messagesConfig = getCustomConfig("translation.yml");
-        prefix = messagesConfig.getString("prefix", "&7[&cGAI&7]&r");
+        prefix = messagesConfig.configMessage("prefix");
 
-        alertsEnabledMessage = messagesConfig
-                .getString("alerts-enabled", "{prefix} &fОповещения включены!")
-                .replace("{prefix}", prefix);
-        alertsDisableMessage = messagesConfig
-                .getString("alerts-disabled", "{prefix} &fОповещения отключены!")
-                .replace("{prefix}", prefix);
-        verboseEnabledMessage = messagesConfig
-                .getString("verbose-enabled", "{prefix} &fПодробная информация включена!")
-                .replace("{prefix}", prefix);
-        verboseDisableMessage = messagesConfig
-                .getString("verbose-disabled", "{prefix} &fПодробная информация отключена!")
-                .replace("{prefix}", prefix);
-        hologramsEnabledMessage = messagesConfig
-                .getString("holograms-enabled", "{prefix} &fПоказ голограмм над игроком включен!")
-                .replace("{prefix}", prefix);
-        hologramsDisableMessage = messagesConfig
-                .getString("holograms-disabled", "{prefix} &fПоказ голограмм над игроком отключен!")
-                .replace("{prefix}", prefix);
+        alertsEnabledMessage = message(messagesConfig, "alerts-enabled");
+        alertsDisableMessage = message(messagesConfig, "alerts-disabled");
+        verboseEnabledMessage = message(messagesConfig, "verbose-enabled");
+        verboseDisableMessage = message(messagesConfig, "verbose-disabled");
+        verboseTestModeOnlyMessage = message(messagesConfig, "verbose-test-mode-only");
+        hologramsEnabledMessage = message(messagesConfig, "holograms-enabled");
+        hologramsDisableMessage = message(messagesConfig, "holograms-disabled");
 
-        aiAlertMessage = messagesConfig
-                .getString(
-                        "ai-alert",
-                        "{prefix} &fИгрок &c{player}&f провалил проверку &cRotationAimCheck &7[&cx{vl}&7] &7{probability}")
-                .replace("{prefix}", prefix);
-        aiVerboseMessage = messagesConfig
-                .getString("ai-verbose", "{prefix} &fИгрок &c{player} &fрезультат: &7{probability}")
-                .replace("{prefix}", prefix);
+        alertMessage = message(messagesConfig, "alert");
+        verboseMessage = message(messagesConfig, "verbose");
 
-        alertMessage = messagesConfig
-                .getString(
-                        "alert",
-                        "{prefix} &fИгрок &x&F&B&0&8&0&8{player} &fпровалил &7&x&F&B&0&8&0&8{check_name} &7[&fx&x&F&B&0&8&0&8{vl}&7] &7{verbose}")
-                .replace("{prefix}", prefix);
-        verboseMessage = messagesConfig
-                .getString(
-                        "verbose",
-                        "{prefix} &fИгрок &x&F&B&0&8&0&8{player} &fпровалил &7&x&F&B&0&8&0&8{check_name} &7[&fx&x&F&B&0&8&0&8{vl}&7] &7{verbose}")
-                .replace("{prefix}", prefix);
+        historyHeaderMessage = message(messagesConfig, "history-header");
+        historyEntryMessage = message(messagesConfig, "history-entry");
+        historyOnlyPlayerMessage = message(messagesConfig, "history-only-player");
+        historyNoDataMessage = message(messagesConfig, "history-no-data");
 
-        historyHeaderMessage = messagesConfig
-                .getString("history-header", "{prefix} &fИстория проверок игрока &c{player} &7({page}&8/&7{max_pages})")
-                .replace("{prefix}", prefix);
-        historyEntryMessage = messagesConfig
-                .getString(
-                        "history-entry",
-                        "{prefix} &8[&b{server}&8] &fПровалил &b{check_name} &f(x&c{vl}&f) &7{verbose} (&b{time_ago} назад&7)")
-                .replace("{prefix}", prefix);
-        historyOnlyPlayerMessage = messagesConfig
-                .getString("history-only-player", "{prefix} &#F3F3F3Меню истории может открыть только игрок.")
-                .replace("{prefix}", prefix);
-        historyNoDataMessage = messagesConfig
-                .getString(
-                        "history-no-data", "{prefix} &#F3F3F3Нет данных истории для игрока &#F65943{player}&#F3F3F3.")
-                .replace("{prefix}", prefix);
+        reloadingMessage = message(messagesConfig, "reloading");
+        reloadedMessage = message(messagesConfig, "reloaded");
 
-        reloadingMessage = messagesConfig
-                .getString("reloading", "{prefix} &fПерезагрузка конфигурации...")
-                .replace("{prefix}", prefix);
-        reloadedMessage = messagesConfig
-                .getString("reloaded", "{prefix} &fКонфигурация успешно перезагружена...")
-                .replace("{prefix}", prefix);
-        connectStatusMissingMessage = messagesConfig
-                .getString("connect.status_missing", "{prefix} &eAPI-ключ не задан. Получите код на gloomai.pro.")
-                .replace("{prefix}", prefix);
-        connectStatusSavedMessage = messagesConfig
-                .getString("connect.status_saved", "{prefix} &aAPI-ключ сохранён. Доступ к API проверяется при анализе игроков.")
-                .replace("{prefix}", prefix);
-        connectUsageMessage = messagesConfig
-                .getString("connect.usage", "{prefix} &eИспользование: /gloom connect <код или API-ключ> | status")
-                .replace("{prefix}", prefix);
-        connectInvalidPanelUrlMessage = messagesConfig
-                .getString("connect.invalid_panel_url", "{prefix} &cУкажите корректный HTTPS-адрес ml_check.panel_url.")
-                .replace("{prefix}", prefix);
-        connectAlreadyConnectingMessage = messagesConfig
-                .getString("connect.already_connecting", "{prefix} &eПодключение уже выполняется.")
-                .replace("{prefix}", prefix);
-        connectConnectingMessage = messagesConfig
-                .getString("connect.connecting", "{prefix} &eПодключаю сервер к кабинету...")
-                .replace("{prefix}", prefix);
-        connectNetworkErrorMessage = messagesConfig
-                .getString("connect.network_error", "{prefix} &cНе удалось связаться с сайтом. Повторите подключение позже.")
-                .replace("{prefix}", prefix);
-        connectRateLimitedMessage = messagesConfig
-                .getString("connect.rate_limited", "{prefix} &cСлишком много попыток. Подождите 15 минут.")
-                .replace("{prefix}", prefix);
-        connectRejectedMessage = messagesConfig
-                .getString("connect.rejected", "{prefix} &cКлюч или код недействителен, IP не разрешён или достигнут лимит IP. Проверьте кабинет.")
-                .replace("{prefix}", prefix);
-        connectSuccessMessage = messagesConfig
-                .getString("connect.success", "{prefix} &aСервер подключён. API-ключ сохранён, перезапуск не требуется.")
-                .replace("{prefix}", prefix);
-        connectSaveErrorMessage = messagesConfig
-                .getString("connect.save_error", "{prefix} &cНе удалось сохранить конфиг. Проверьте права на checks.yml и создайте новый код.")
-                .replace("{prefix}", prefix);
-        connectInvalidResponseMessage = messagesConfig
-                .getString("connect.invalid_response", "{prefix} &cСайт вернул некорректный ответ. Создайте новый код и повторите попытку.")
-                .replace("{prefix}", prefix);
+        helpHeaderMessage = message(messagesConfig, "help.header");
+        helpFormatMessage = message(messagesConfig, "help.format");
+        helpFooterMessage = message(messagesConfig, "help.footer");
 
-        monitorActionBarFormat = messagesConfig
-                .getString(
-                        "monitor.action_bar.format",
-                        "&b&lAI &f{player} &8• &7Prob {probability_color}{probability}% &8{trend} &8• &7Buffer &e{buffer} &8• &7Ping {ping_color}{ping}ms")
-                .replace("{prefix}", prefix);
-        monitorWaitingFormat = messagesConfig
-                .getString("monitor.action_bar.waiting", "&b&lAI &f{player} &8• &7ожидание результата анализа...")
-                .replace("{prefix}", prefix);
-        monitorTrendUpFormat = messagesConfig
-                .getString("monitor.action_bar.trend.up", "&c▲ +{value}")
-                .replace("{prefix}", prefix);
-        monitorTrendDownFormat = messagesConfig
-                .getString("monitor.action_bar.trend.down", "&a▼ {value}")
-                .replace("{prefix}", prefix);
-        monitorTrendEqualFormat = messagesConfig
-                .getString("monitor.action_bar.trend.equal", "&8=")
-                .replace("{prefix}", prefix);
+        statusHeaderMessage = message(messagesConfig, "status.header");
+        statusBackendMessage = message(messagesConfig, "status.backend");
+        statusModelMessage = message(messagesConfig, "status.model");
+        statusRequestsTodayMessage = message(messagesConfig, "status.requests_today");
+        statusRequestsRemainingMessage = message(messagesConfig, "status.requests_remaining");
+        statusPlanMessage = message(messagesConfig, "status.plan");
+        statusCheckingMessage = message(messagesConfig, "status.checking");
+        statusConnectedText = message(messagesConfig, "status.connected");
+        statusNotConnectedText = message(messagesConfig, "status.not_connected");
+        statusNoLicenseMessage = message(messagesConfig, "status.no_license");
+        statusErrorMessage = message(messagesConfig, "status.error");
+        statusUnlimitedText = message(messagesConfig, "status.unlimited");
 
-        monitorOnlyPlayerMessage = messagesConfig
-                .getString("monitor.only_player", "{prefix} &fЭту команду может выполнить только игрок.")
-                .replace("{prefix}", prefix);
-        monitorEnabledMessage = messagesConfig
-                .getString("monitor.enabled", "{prefix} &fМонитор включён для &7{player}&f.")
-                .replace("{prefix}", prefix);
-        monitorDisabledMessage = messagesConfig
-                .getString("monitor.disabled", "{prefix} &fМонитор выключен.")
-                .replace("{prefix}", prefix);
-        monitorNotRunningMessage = messagesConfig
-                .getString("monitor.not_running", "{prefix} &fМонитор сейчас не запущен.")
-                .replace("{prefix}", prefix);
-        monitorSwitchedMessage = messagesConfig
-                .getString("monitor.switched", "{prefix} &fЦель монитора изменена на &7{player}&f.")
-                .replace("{prefix}", prefix);
-        monitorPlayerNotFoundMessage = messagesConfig
-                .getString("monitor.player_not_found", "{prefix} &fИгрок не найден.")
-                .replace("{prefix}", prefix);
-        monitorTargetLeftMessage = messagesConfig
-                .getString("monitor.target_left", "{prefix} &fМонитор остановлен: игрок &7{player} &fвышел с сервера.")
-                .replace("{prefix}", prefix);
+        connectStatusMissingMessage = message(messagesConfig, "connect.status_missing");
+        connectStatusSavedMessage = message(messagesConfig, "connect.status_saved");
+        connectUsageMessage = message(messagesConfig, "connect.usage");
+        connectInvalidPanelUrlMessage = message(messagesConfig, "connect.invalid_panel_url");
+        connectAlreadyConnectingMessage = message(messagesConfig, "connect.already_connecting");
+        connectConnectingMessage = message(messagesConfig, "connect.connecting");
+        connectNetworkErrorMessage = message(messagesConfig, "connect.network_error");
+        connectRateLimitedMessage = message(messagesConfig, "connect.rate_limited");
+        connectRejectedMessage = message(messagesConfig, "connect.rejected");
+        connectSuccessMessage = message(messagesConfig, "connect.success");
+        connectSaveErrorMessage = message(messagesConfig, "connect.save_error");
+        connectInvalidResponseMessage = message(messagesConfig, "connect.invalid_response");
+
+        monitorActionBarFormat = message(messagesConfig, "monitor.action_bar.format");
+        monitorWaitingFormat = message(messagesConfig, "monitor.action_bar.waiting");
+        monitorTrendUpFormat = message(messagesConfig, "monitor.action_bar.trend.up");
+        monitorTrendDownFormat = message(messagesConfig, "monitor.action_bar.trend.down");
+        monitorTrendEqualFormat = message(messagesConfig, "monitor.action_bar.trend.equal");
+
+        monitorOnlyPlayerMessage = message(messagesConfig, "monitor.only_player");
+        monitorEnabledMessage = message(messagesConfig, "monitor.enabled");
+        monitorDisabledMessage = message(messagesConfig, "monitor.disabled");
+        monitorNotRunningMessage = message(messagesConfig, "monitor.not_running");
+        monitorSwitchedMessage = message(messagesConfig, "monitor.switched");
+        monitorPlayerNotFoundMessage = message(messagesConfig, "monitor.player_not_found");
+        monitorTargetLeftMessage = message(messagesConfig, "monitor.target_left");
 
         menuSettings = PlayersMenuSettings.fromSection(
                 getCustomConfig("menu/players.yml").getConfig());
@@ -272,5 +215,9 @@ public class MainConfigManager extends ConfigManager {
     public String getPercentString(double percent) {
         String color = getChanceColor(percent);
         return "%s%.2f".formatted(color, percent * 100);
+    }
+
+    private String message(CustomConfig config, String path) {
+        return config.configMessage(path).replace("{prefix}", prefix);
     }
 }

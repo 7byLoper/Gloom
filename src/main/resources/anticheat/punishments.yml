@@ -4,6 +4,6 @@ rotation_aim:
   remove-violations-after: 300
 
   commands:
-    - "1:1 [ai_alert]"
+    - "1:1 [alert]"
     - "2:2 [log]"
     - "5:0 ban {player} Система Gloom заметила ваше нестандартное поведение" # {probability} - вероятность в формате 0.0000

@@ -16,6 +16,7 @@ import ru.gloom.api.command.register.SubCommandRegister;
 import ru.gloom.api.model.monitor.ToggleResult;
 import ru.gloom.config.MainConfigManager;
 import ru.gloom.manager.analytic.MonitorManager;
+import ru.gloom.utils.MessageUtils;
 
 @SubCommandRegister(permission = "gloom.command.monitor", aliases = "monitor")
 public class MonitorSubCommand implements BuildableCommand {
@@ -24,7 +25,7 @@ public class MonitorSubCommand implements BuildableCommand {
         MainConfigManager config = GloomAI.INSTANCE.getMainConfigManager();
 
         if (!(commandSender instanceof Player viewer)) {
-            commandSender.sendMessage(config.getMonitorOnlyPlayerMessage());
+            MessageUtils.send(commandSender, config.getMonitorOnlyPlayerMessage());
             return;
         }
 
@@ -34,14 +35,14 @@ public class MonitorSubCommand implements BuildableCommand {
             String response = monitorManager.stop(viewer)
                     ? config.getMonitorDisabledMessage()
                     : config.getMonitorNotRunningMessage();
-            viewer.sendMessage(response);
+            MessageUtils.send(viewer, response);
             return;
         }
 
         Player target = extractPlayer(args, viewer);
 
         if (target == null || !target.isOnline()) {
-            viewer.sendMessage(config.getMonitorPlayerNotFoundMessage());
+            MessageUtils.send(viewer, config.getMonitorPlayerNotFoundMessage());
             return;
         }
 
@@ -54,7 +55,7 @@ public class MonitorSubCommand implements BuildableCommand {
                     case DISABLED -> config.getMonitorDisabledMessage();
                 };
 
-        viewer.sendMessage(response.replace("{player}", target.getName()));
+        MessageUtils.send(viewer, response.replace("{player}", target.getName()));
     }
 
     private static @Nullable Player extractPlayer(@NotNull String @NonNull [] args, Player viewer) {

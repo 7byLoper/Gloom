@@ -16,6 +16,10 @@ public class VerboseSubCommand implements BuildableCommand {
             return;
         }
 
+        if (!GloomAI.INSTANCE.getMainConfigManager().isTestMode()) {
+            return;
+        }
+
         GloomAI.INSTANCE.getAlertManager().toggleVerbose(player.getUniqueId(), false);
     }
 

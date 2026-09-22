@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
 import lombok.Data;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
@@ -16,6 +15,7 @@ import ru.gloom.GloomAI;
 import ru.gloom.api.events.EndTrainEvent;
 import ru.gloom.api.model.TrainStatisticInfoType;
 import ru.gloom.service.train.UploadService;
+import ru.gloom.utils.MessageUtils;
 
 @Data
 public class TrainData {
@@ -77,14 +77,24 @@ public class TrainData {
     }
 
     private void sendTrainStatistic(Player owner) {
+        String infoMessage = generateInfoMessage();
+        if (infoMessage.isBlank()) {
+            if (trainBar != null) {
+                trainBar.removeAll();
+                trainBar.setVisible(false);
+                trainBar = null;
+            }
+            return;
+        }
+
         if (GloomAI.INSTANCE.getDataCollectConfigManager().getInfoType() == TrainStatisticInfoType.ACTIONBAR) {
-            owner.sendActionBar(LegacyComponentSerializer.legacySection().deserialize(generateInfoMessage()));
+            MessageUtils.sendActionBar(owner, infoMessage);
             return;
         }
 
         if (trainBar == null) {
             trainBar = Bukkit.createBossBar(
-                    generateInfoMessage(),
+                    infoMessage,
                     GloomAI.INSTANCE.getDataCollectConfigManager().isAutosaveStatus() ? BarColor.RED : BarColor.GREEN,
                     BarStyle.SEGMENTED_20);
             if (GloomAI.INSTANCE.getDataCollectConfigManager().isAutosaveStatus()) {
@@ -96,7 +106,7 @@ public class TrainData {
             trainBar.addPlayer(owner);
         }
 
-        trainBar.setTitle(generateInfoMessage());
+        trainBar.setTitle(infoMessage);
         if (!GloomAI.INSTANCE.getDataCollectConfigManager().isAutosaveStatus()) {
             return;
         }
@@ -202,7 +212,7 @@ public class TrainData {
         }
 
         if (owner != null) {
-            owner.sendMessage(GloomAI.INSTANCE
+            MessageUtils.send(owner, GloomAI.INSTANCE
                     .getDataCollectConfigManager()
                     .getMessageAllStopAuto()
                     .replace("{target}", playerName));

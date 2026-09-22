@@ -7,12 +7,13 @@ import ru.gloom.GloomAI;
 import ru.gloom.api.command.BuildableCommand;
 import ru.gloom.api.command.register.SubCommandRegister;
 import ru.gloom.player.GloomPlayer;
+import ru.gloom.utils.MessageUtils;
 
 @SubCommandRegister(permission = "gloom.command.reload", aliases = "reload")
 public class ReloadSubCommand implements BuildableCommand {
     @Override
     public void handle(@NotNull CommandSender commandSender, @NotNull String[] args) {
-        commandSender.sendMessage(GloomAI.INSTANCE.getMainConfigManager().getReloadingMessage());
+        MessageUtils.send(commandSender, GloomAI.INSTANCE.getMainConfigManager().getReloadingMessage());
 
         GloomAI.INSTANCE.getMainConfigManager().reloadAll();
         GloomAI.INSTANCE.getChecksConfigManager().reloadAll();
@@ -21,7 +22,7 @@ public class ReloadSubCommand implements BuildableCommand {
         GloomAI.INSTANCE.getPunishmentConfigManager().reloadAll();
         GloomAI.INSTANCE.getPlayerDataManager().getEntries().forEach(GloomPlayer::reload);
 
-        commandSender.sendMessage(GloomAI.INSTANCE.getMainConfigManager().getReloadedMessage());
+        MessageUtils.send(commandSender, GloomAI.INSTANCE.getMainConfigManager().getReloadedMessage());
     }
 
     @Override

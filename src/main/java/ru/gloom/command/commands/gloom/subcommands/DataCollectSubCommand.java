@@ -14,6 +14,7 @@ import ru.gloom.api.command.BuildableCommand;
 import ru.gloom.api.command.register.SubCommandRegister;
 import ru.gloom.api.model.data.DatasetType;
 import ru.gloom.player.GloomPlayer;
+import ru.gloom.utils.MessageUtils;
 
 @SubCommandRegister(permission = "gloom.command.datacollect", aliases = "datacollect")
 public final class DataCollectSubCommand implements BuildableCommand {
@@ -23,9 +24,9 @@ public final class DataCollectSubCommand implements BuildableCommand {
     @Override
     public void handle(@NotNull CommandSender commandSender, @NotNull String[] args) {
         if (args.length < 2) {
-            commandSender.sendMessage(
+            MessageUtils.send(commandSender,
                     GloomAI.INSTANCE.getDataCollectConfigManager().getMessageStartHelp());
-            commandSender.sendMessage(
+            MessageUtils.send(commandSender,
                     GloomAI.INSTANCE.getDataCollectConfigManager().getMessageStopHelp());
             return;
         }
@@ -34,9 +35,9 @@ public final class DataCollectSubCommand implements BuildableCommand {
             case "start" -> handleStart(commandSender, args);
             case "stop" -> handleStop(commandSender, args);
             default -> {
-                commandSender.sendMessage(
+                MessageUtils.send(commandSender,
                         GloomAI.INSTANCE.getDataCollectConfigManager().getMessageStartHelp());
-                commandSender.sendMessage(
+                MessageUtils.send(commandSender,
                         GloomAI.INSTANCE.getDataCollectConfigManager().getMessageStopHelp());
             }
         }
@@ -48,7 +49,7 @@ public final class DataCollectSubCommand implements BuildableCommand {
         }
 
         if (args.length < 5) {
-            commandSender.sendMessage(
+            MessageUtils.send(commandSender,
                     GloomAI.INSTANCE.getDataCollectConfigManager().getMessageStartHelp());
             return;
         }
@@ -58,14 +59,14 @@ public final class DataCollectSubCommand implements BuildableCommand {
         DatasetType datasetType = DatasetType.fromName(args[4]);
 
         if (datasetType == null) {
-            commandSender.sendMessage(
+            MessageUtils.send(commandSender,
                     GloomAI.INSTANCE.getDataCollectConfigManager().getMessageStartHelp());
             return;
         }
 
         Player targetPlayer = Bukkit.getPlayerExact(targetName);
         if (targetPlayer == null) {
-            commandSender.sendMessage(GloomAI.INSTANCE
+            MessageUtils.send(commandSender, GloomAI.INSTANCE
                     .getDataCollectConfigManager()
                     .getMessageAllOffline()
                     .replace("{target}", targetName));
@@ -78,7 +79,7 @@ public final class DataCollectSubCommand implements BuildableCommand {
         }
 
         if (gloomPlayer.getTrainData().isDatasetsCollecting()) {
-            commandSender.sendMessage(GloomAI.INSTANCE
+            MessageUtils.send(commandSender, GloomAI.INSTANCE
                     .getDataCollectConfigManager()
                     .getMessageAllAlreadyCollecting()
                     .replace("{target}", targetName));
@@ -87,7 +88,7 @@ public final class DataCollectSubCommand implements BuildableCommand {
 
         if (type.equals("cheat")) {
             if (args.length < 6) {
-                commandSender.sendMessage(
+                MessageUtils.send(commandSender,
                         GloomAI.INSTANCE.getDataCollectConfigManager().getMessageStartNoneSelected());
                 return;
             }
@@ -98,12 +99,12 @@ public final class DataCollectSubCommand implements BuildableCommand {
             setDatasetOwner(commandSender, gloomPlayer);
             gloomPlayer.startDatasetsCollection("legit", false, datasetType);
         } else {
-            commandSender.sendMessage(
+            MessageUtils.send(commandSender,
                     GloomAI.INSTANCE.getDataCollectConfigManager().getMessageAllNoneType());
             return;
         }
 
-        commandSender.sendMessage(GloomAI.INSTANCE
+        MessageUtils.send(commandSender, GloomAI.INSTANCE
                 .getDataCollectConfigManager()
                 .getMessageAllStart()
                 .replace("{target}", gloomPlayer.getName()));
@@ -115,7 +116,7 @@ public final class DataCollectSubCommand implements BuildableCommand {
         }
 
         if (args.length < 3) {
-            commandSender.sendMessage(
+            MessageUtils.send(commandSender,
                     GloomAI.INSTANCE.getDataCollectConfigManager().getMessageStopHelp());
             return;
         }
@@ -124,7 +125,7 @@ public final class DataCollectSubCommand implements BuildableCommand {
 
         Player targetPlayer = Bukkit.getPlayerExact(targetName);
         if (targetPlayer == null) {
-            commandSender.sendMessage(GloomAI.INSTANCE
+            MessageUtils.send(commandSender, GloomAI.INSTANCE
                     .getDataCollectConfigManager()
                     .getMessageAllOffline()
                     .replace("{target}", targetName));
@@ -137,7 +138,7 @@ public final class DataCollectSubCommand implements BuildableCommand {
         }
 
         if (!gloomPlayer.getTrainData().isDatasetsCollecting()) {
-            commandSender.sendMessage(GloomAI.INSTANCE
+            MessageUtils.send(commandSender, GloomAI.INSTANCE
                     .getDataCollectConfigManager()
                     .getMessageStopNoneCollecting()
                     .replace("{target}", targetName));
@@ -145,7 +146,7 @@ public final class DataCollectSubCommand implements BuildableCommand {
         }
 
         gloomPlayer.stopDatasetsCollection();
-        commandSender.sendMessage(GloomAI.INSTANCE
+        MessageUtils.send(commandSender, GloomAI.INSTANCE
                 .getDataCollectConfigManager()
                 .getMessageAllStop()
                 .replace("{target}", gloomPlayer.getName()));

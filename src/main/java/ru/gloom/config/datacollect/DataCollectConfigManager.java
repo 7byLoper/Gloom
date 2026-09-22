@@ -49,35 +49,19 @@ public class DataCollectConfigManager extends ConfigManager {
 
         String infoTypeStr = config.getString("info_statistic.type", "BOSSBAR");
         infoType = TrainStatisticInfoType.getByName(infoTypeStr);
-        infoMessage = config.getString(
-                "info_statistic.line",
-                "&#D3B4FC[DataCollect] &7{player}&f collected: &7{frames_collecting}&f (buffer: &7{frames_size}&f) uploaded: &7{sending}");
+        infoMessage = config.configMessage("info_statistic.line");
 
-        messageStartHelp = config.getString(
-                "messages.start.help",
-                "&#5699DE[DataCollect] &fUsage: &7/gloom datacollect start <collector> <cheat|legit> <rotation> [cheat_name]");
-        messageStartNoneSelected = config.getString(
-                "messages.start.none_selected",
-                "&#5699DE[DataCollect] &fFor cheat data collection you must specify cheat name");
+        messageStartHelp = config.configMessage("messages.start.help");
+        messageStartNoneSelected = config.configMessage("messages.start.none_selected");
 
-        messageStopHelp = config.getString(
-                "messages.stop.help", "&#5699DE[DataCollect] &fUsage: &7/gloom datacollect stop <collector>");
-        messageStopNoneCollecting = config.getString(
-                "messages.stop.no_collecting", "&#5699DE[DataCollect] &fPlayer {target} is not collecting data");
+        messageStopHelp = config.configMessage("messages.stop.help");
+        messageStopNoneCollecting = config.configMessage("messages.stop.no_collecting");
 
-        messageAllOffline =
-                config.getString("messages.all.offline", "&#5699DE[DataCollect] &fPlayer &7{target} &fis offline");
-        messageAllAlreadyCollecting = config.getString(
-                "messages.all.already_collecting",
-                "&#5699DE[DataCollect] &fData is already being collected from &7{target}");
-        messageAllNoneType = config.getString(
-                "messages.all.none_type",
-                "&#5699DE[DataCollect] &fInvalid collection type. Available: &7[cheat/legit]");
-        messageAllStart = config.getString(
-                "messages.start.start", "&#5699DE[DataCollect] &fStarted dataset collection for &7{target}");
-        messageAllStop = config.getString(
-                "messages.stop.stop", "&#5699DE[DataCollect] &fStopped dataset collection for &7{target}");
-        messageAllStopAuto = config.getString(
-                "messages.stop.auto_stop", "&#5699DE[DataCollect] &fDataset collection stopped for &7{target}");
+        messageAllOffline = config.configMessage("messages.all.offline");
+        messageAllAlreadyCollecting = config.configMessage("messages.all.already_collecting");
+        messageAllNoneType = config.configMessage("messages.all.none_type");
+        messageAllStart = config.configMessage("messages.start.start");
+        messageAllStop = config.configMessage("messages.stop.stop");
+        messageAllStopAuto = config.configMessage("messages.stop.auto_stop");
     }
 }

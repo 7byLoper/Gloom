@@ -41,7 +41,8 @@ public class PacketPlayerJoinQuit extends PacketListenerAbstract {
             }
         }
 
-        if (player.hasPermission("gloom.command.verbose")
+        if (GloomAI.INSTANCE.getMainConfigManager().isTestMode()
+                && player.hasPermission("gloom.command.verbose")
                 && player.hasPermission("gloom.command.verbose.enable-on-join")) {
 
             if (!GloomAI.INSTANCE.getAlertManager().hasVerboseEnabled(uuid)) {

@@ -34,6 +34,7 @@ public final class RotationAimCheck extends Check implements PacketCheck {
     private List<RotationFrame> lastAnalyzedFrames;
     private double lastProbability;
     private double buffer = 0.0D;
+    private String lastModel;
 
     public RotationAimCheck(GloomPlayer player) {
         super(player);
@@ -66,7 +67,7 @@ public final class RotationAimCheck extends Check implements PacketCheck {
             return;
         }
 
-        if (GloomAI.INSTANCE.getChecksConfigManager().isAimAiBypassedInRegion(bukkitPlayer)) {
+        if (isBypassed() || GloomAI.INSTANCE.getChecksConfigManager().isAimAiBypassedInRegion(bukkitPlayer)) {
             clearFrames();
             return;
         }
@@ -106,7 +107,7 @@ public final class RotationAimCheck extends Check implements PacketCheck {
             return;
         }
 
-        if (GloomAI.INSTANCE.getChecksConfigManager().isAimAiBypassedInRegion(bukkitPlayer)) {
+        if (isBypassed() || GloomAI.INSTANCE.getChecksConfigManager().isAimAiBypassedInRegion(bukkitPlayer)) {
             clearFrames();
             return;
         }
@@ -119,7 +120,7 @@ public final class RotationAimCheck extends Check implements PacketCheck {
         GloomAI.INSTANCE
                 .getViolationManager()
                 .updateAnalysisSnapshot(bukkitPlayer.getUniqueId(), lastProbability, buffer);
-        sendAiVerbose();
+        sendVerbose();
 
         GloomAI.INSTANCE.getMonitorManager().publish(bukkitPlayer, lastProbability, buffer);
 
@@ -133,7 +134,7 @@ public final class RotationAimCheck extends Check implements PacketCheck {
         player.getPunishmentManager()
                 .handleViolation(
                         this,
-                        "prob: %.4f, buffer: %.2f, check: RotationAimCheck".formatted(lastProbability, bufferAtFlag),
+                        "prob: %.4f, buffer: %.2f, model: %s".formatted(lastProbability, bufferAtFlag, getEffectiveModel()),
                         lastProbability);
 
         buffer = bufferResetOnFlag;
@@ -190,6 +191,26 @@ public final class RotationAimCheck extends Check implements PacketCheck {
         }
     }
 
+    public synchronized void handleAnalyzeResult(double chance, long sequence, String model) {
+        if (isRequestCurrent(sequence)) {
+            if (model != null && !model.isBlank()) {
+                this.lastModel = model;
+            }
+            handleAnalyzeResult(chance);
+        }
+    }
+
+    public String getEffectiveModel() {
+        if (lastModel != null && !lastModel.isBlank()) {
+            return lastModel;
+        }
+        String dispatcherModel = GloomAI.INSTANCE.getAnalyzeBatchDispatcher().getLastModelName();
+        if (dispatcherModel != null && !dispatcherModel.isBlank()) {
+            return dispatcherModel;
+        }
+        return "TCN";
+    }
+
     @Override
     public boolean alert() {
         if (!canAlert()) {
@@ -201,21 +222,24 @@ public final class RotationAimCheck extends Check implements PacketCheck {
             return false;
         }
 
+        String modelName = getEffectiveModel();
         String probability = GloomAI.INSTANCE.getMainConfigManager().getChanceString(lastProbability);
-        String verboseTemplate = GloomAI.INSTANCE.getMainConfigManager().getAiVerboseMessage();
+        String verboseTemplate = GloomAI.INSTANCE.getMainConfigManager().getVerboseMessage();
         String verboseMessage = verboseTemplate
                 .replace("{player}", bukkitPlayer.getName())
-                .replace("{check}", "RotationAimCheck")
+                .replace("{model}", modelName)
+                .replace("{check}", modelName)
+                .replace("RotationAimCheck", modelName)
                 .replace("{probability}", probability)
                 .replace("{buffer}", "%.2f".formatted(buffer));
-        if (!verboseTemplate.contains("{check}")) {
-            verboseMessage += " &7[RotationAimCheck]";
-        }
 
         String alertMessage = GloomAI.INSTANCE
                 .getMainConfigManager()
-                .getAiAlertMessage()
+                .getAlertMessage()
                 .replace("{player}", bukkitPlayer.getName())
+                .replace("{model}", modelName)
+                .replace("{check}", modelName)
+                .replace("RotationAimCheck", modelName)
                 .replace("{vl}", String.valueOf((int) getViolations()))
                 .replace("{probability}", probability)
                 .replace("{buffer}", "%.2f".formatted(buffer));
@@ -224,7 +248,7 @@ public final class RotationAimCheck extends Check implements PacketCheck {
         GloomAI.INSTANCE.getAlertManager().sendAlert(alertMessage);
         GloomAI.INSTANCE
                 .getViolationManager()
-                .logAlert(this, "prob: %.4f, buffer: %.2f".formatted(lastProbability, buffer));
+                .logAlert(this, "prob: %.4f, buffer: %.2f, model: %s".formatted(lastProbability, buffer, modelName));
         return true;
     }
 
@@ -233,22 +257,22 @@ public final class RotationAimCheck extends Check implements PacketCheck {
         return alert();
     }
 
-    private void sendAiVerbose() {
+    private void sendVerbose() {
         Player bukkitPlayer = player.getBukkitPlayer();
         if (bukkitPlayer == null || !bukkitPlayer.isOnline()) {
             return;
         }
 
+        String modelName = getEffectiveModel();
         String probability = GloomAI.INSTANCE.getMainConfigManager().getChanceString(lastProbability);
-        String verboseTemplate = GloomAI.INSTANCE.getMainConfigManager().getAiVerboseMessage();
+        String verboseTemplate = GloomAI.INSTANCE.getMainConfigManager().getVerboseMessage();
         String verboseMessage = verboseTemplate
                 .replace("{player}", bukkitPlayer.getName())
-                .replace("{check}", "RotationAimCheck")
+                .replace("{model}", modelName)
+                .replace("{check}", modelName)
+                .replace("RotationAimCheck", modelName)
                 .replace("{probability}", probability)
                 .replace("{buffer}", "%.2f".formatted(buffer));
-        if (!verboseTemplate.contains("{check}")) {
-            verboseMessage += " &7[RotationAimCheck]";
-        }
 
         GloomAI.INSTANCE.getAlertManager().sendVerbose(verboseMessage);
     }

@@ -20,18 +20,20 @@ placeholder:
   server_name: 'grief #1'
 
 print_to_console: false
+# Тестовый режим. Подробный вывод (/gloom verbose) доступен только при true
+test_mode: false
 history_entries_per_page: 15
 
 max_local_entries: 20
 max_prob_entries: 10
 
 ai_colors:
-  0,0: '&#00FF00'
-  0,2: '&#94FF47'
-  0,3: '&#C1FF47'
-  0,4: '&#D7FF47'
-  0,5: '&#F5FF47'
-  0,6: '&#FFE447'
-  0,7: '&#FFBE47'
-  0,8: '&#FF7B47'
-  0,9: '&#FF3B3B'
+  0,0: '&#00FF66'
+  0,2: '&#00FF66'
+  0,3: '&#00FF66'
+  0,4: '&#00FF66'
+  0,5: '&#FFFFFF'
+  0,6: '&#FFE500'
+  0,7: '&#FFE500'
+  0,8: '&#FF2B2B'
+  0,9: '&#FF2B2B'

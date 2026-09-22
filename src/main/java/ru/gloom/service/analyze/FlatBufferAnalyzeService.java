@@ -46,7 +46,9 @@ public final class FlatBufferAnalyzeService implements AnalyzeService {
             return;
         }
 
-        dispatcher.enqueue(payload, probability -> rotationAimCheck.handleAnalyzeResult(probability, sequence),
+        dispatcher.enqueue(
+                payload,
+                (probability, model) -> rotationAimCheck.handleAnalyzeResult(probability, sequence, model),
                 () -> rotationAimCheck.isRequestCurrent(sequence));
     }
 

@@ -11,6 +11,45 @@ softdepend:
   - WorldGuard
 
 permissions:
+  gloom.command.use:
+    description: Доступ к основной команде GloomAI
+    default: op
+  gloom.command.help:
+    description: Просмотр списка команд GloomAI
+    default: op
+  gloom.command.status:
+    description: Просмотр статуса системы и тарифа GloomAI
+    default: op
   gloom.command.connect:
     description: Подключение сервера к личному кабинету Gloom
     default: op
+  gloom.command.alert:
+    description: Переключение оповещений о читерах
+    default: op
+  gloom.command.alert.enable-on-join:
+    description: Автоматическое включение оповещений при заходе
+    default: op
+  gloom.command.verbose:
+    description: Переключение подробного вывода анализа в тестовом режиме
+    default: op
+  gloom.command.verbose.enable-on-join:
+    description: Автоматическое включение подробного режима при заходе
+    default: false
+  gloom.command.hologram:
+    description: Переключение голограмм над игроками
+    default: op
+  gloom.command.history:
+    description: Просмотр истории нарушений игроков
+    default: op
+  gloom.command.menu:
+    description: Открытие меню GloomAI
+    default: op
+  gloom.command.reload:
+    description: Перезагрузка конфигурации GloomAI
+    default: op
+  gloom.command.monitor:
+    description: Мониторинг игроков в реальном времени
+    default: op
+  gloom.bypass:
+    description: Право на обход проверок GloomAI
+    default: false

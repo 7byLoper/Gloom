@@ -15,6 +15,8 @@ public class GloomCommand extends BaseCommandExecutor {
 
     @Override
     public void registerWrappers() {
+        addSubCommand(new HelpSubCommand());
+        addSubCommand(new StatusSubCommand());
         addSubCommand(new AlertsSubCommand());
         addSubCommand(new VerboseSubCommand());
         addSubCommand(new HologramsSubCommand());
@@ -28,6 +30,7 @@ public class GloomCommand extends BaseCommandExecutor {
 
     @Override
     public String handleNoArguments(@NotNull CommandSender sender) {
+        HelpSubCommand.sendHelp(sender);
         return "";
     }
 }

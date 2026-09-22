@@ -9,19 +9,19 @@ auto_save:
 info_statistic:
   # ACTIONBAR / BOSSBAR
   type: BOSSBAR
-  line: "&7{player}&f собрал: &7{frames_collecting}&f (буфер: &7{frames_size}&f) отправлено: &7{sending}"
+  line: '&#FFFFFF{player} &#777777собрано &#FFFFFF{frames_collecting} &#777777буфер &#FFFFFF{frames_size} &#777777отправлено &#FFFFFF{sending}'
 
 messages:
   start:
-    help: "&fИспользование: &7/gloom datacollect start <коллектор> <cheat|legit> <rotation> [название_чита]"
-    none_selected: "&fДля сбора данных читера необходимо указать название чита"
-    start: "&fЗапущен сбор набора данных для &7{target}"
+    help: '&#777777Использование: &#FFFFFF/gloom datacollect start <коллектор> <cheat|legit> <rotation> [название_чита]'
+    none_selected: '&#FF2B2BДля сбора данных читера необходимо указать название чита'
+    start: '&#FFFFFFЗапущен сбор набора данных для {target}'
   stop:
-    help: "&fИспользование: &7/gloom datacollect stop <коллектор>"
-    no_collecting: "&fИгрок {target} не собирает данные"
-    stop: "&fОстановлен сбор набора данных для &7{target}"
-    auto_stop: "&fСбор набора данных остановлен для &7{target}"
+    help: '&#777777Использование: &#FFFFFF/gloom datacollect stop <коллектор>'
+    no_collecting: '&#FFE500Игрок {target} не собирает данные'
+    stop: '&#FFFFFFОстановлен сбор набора данных для {target}'
+    auto_stop: '&#FFE500Сбор набора данных остановлен для {target}'
   all:
-    offline: "&fИгрок &7{target} &fоффлайн"
-    already_collecting: "&fДанные уже собираются с &7{target}"
-    none_type: "&fНекорректный тип сбора. Доступно: &7[cheat/legit]"
+    offline: '&#FF2B2BИгрок {target} оффлайн'
+    already_collecting: '&#FFE500Данные уже собираются с {target}'
+    none_type: '&#FF2B2BНекорректный тип сбора. &#777777Доступно: &#FFFFFFcheat, legit'

@@ -1,58 +1,86 @@
-prefix: '&#85FFAFG&#89FFB9l&#8CFFC3o&#90FFCDo&#93FFD7m &7»'
+prefix: <gradient:#FFFFFF:#7A7A7A>GLOOM</gradient> »
 
-alerts-enabled: '{prefix} &#F3F3F3Оповещения &#95F643включены&#F3F3F3!'
-alerts-disabled: '{prefix} &#F3F3F3Оповещения &#F65943отключены&#F3F3F3!'
+alerts-enabled: '{prefix} &#FFFFFFОповещения &#00FF00включены'
+alerts-disabled: '{prefix} &#FFFFFFОповещения &#FF2B2Bвыключены'
 
-verbose-enabled: '{prefix} &#F3F3F3Подробная информация &#95F643включена&#F3F3F3!'
-verbose-disabled: '{prefix} &#F3F3F3Подробная информация &#F65943отключена&#F3F3F3!'
+verbose-enabled: '{prefix} &#FFFFFFПодробный вывод включен'
+verbose-disabled: '{prefix} &#FFFFFFПодробный вывод &#FF2B2Bвыключен'
 
-holograms-enabled: '{prefix} &#F3F3F3Показ голограмм над игроком &#95F643включен&#F3F3F3!'
-holograms-disabled: '{prefix} &#F3F3F3Показ голограмм над игроком &#F65943отключен&#F3F3F3!'
+holograms-enabled: '{prefix} &#FFFFFFПоказ голограмм &#00FF00включен'
+holograms-disabled: '{prefix} &#FFFFFFПоказ голограмм &#FF2B2Bвыключен'
 
-ai-alert: '{prefix} &#F3F3F3Игрок &#CDCDCD{player}&#F3F3F3 провалил проверку &#F65943RotationAimCheck &#DBDBDB[&#F65943x{vl}&#DBDBDB]'
-ai-verbose: '{prefix} &#F3F3F3Игрок &#CDCDCD{player} &#F3F3F3проверка: &#CDCDCD{check}&#F3F3F3, результат: &#CDCDCD{probability}&#F3F3F3, буфер: &#CDCDCD{buffer}'
+alert: '{prefix} &#FFE500{model} &#FFFFFF{player} &#FF2B2B{probability} &#777777buffer
+  &#FFFFFF{buffer} &#777777vl &#FFFFFF{vl} &#777777{verbose}'
+verbose: '{prefix} &#FFE500{model} &#FFFFFF{player} &#FFFFFF{probability} &#777777buffer
+  &#FFFFFF{buffer} &#777777vl &#FFFFFF{vl} &#777777{verbose}'
 
-alert: '{prefix} &fИгрок &x&F&B&0&8&0&8{player} &fпровалил &7&x&F&B&0&8&0&8{check_name}
-  &7[&fx&x&F&B&0&8&0&8{vl}&7] &7{verbose}'
-verbose: '{prefix} &fИгрок &x&F&B&0&8&0&8{player} &fпровалил &7&x&F&B&0&8&0&8{check_name}
-  &7[&fx&x&F&B&0&8&0&8{vl}&7] &7{verbose}'
+history-header: <gradient:#FFFFFF:#7A7A7A>GLOOM</gradient> &#FFFFFFИстория {player}
+  &#777777{page}/{max_pages}
+history-entry: '{prefix} &#777777{server} &#FFFFFF{check_name} &#FF2B2Bx{vl} &#777777{verbose}
+  &#777777{time_ago} назад'
+history-only-player: '{prefix} &#FF2B2BМеню истории доступно только игроку'
+history-no-data: '{prefix} &#FF2B2BНет данных истории для &#FFFFFF{player}'
 
-history-header: '{prefix} &#F3F3F3История проверок игрока &#F65943{player} &7({page}&8/&7{max_pages})'
-history-entry: '{prefix} &8[&#93FFD7{server}&8] &#F3F3F3Провалил &#93FFD7{check_name} &#F3F3F3(x&#F65943{vl}&f) &7{verbose} (&#93FFD7{time_ago} назад&7)'
-history-only-player: '{prefix} &#F3F3F3Меню истории может открыть только игрок.'
-history-no-data: '{prefix} &#F3F3F3Нет данных истории для игрока &#F65943{player}&#F3F3F3.'
+reloading: '{prefix} &#777777Перезагрузка конфигурации...'
+reloaded: '{prefix} &#FFFFFFКонфигурация перезагружена'
 
-reloading: '{prefix} &#F3F3F3Перезагрузка конфигурации...'
-reloaded: '{prefix} &#F3F3F3Конфигурация успешно перезагружена...'
+help:
+  header: '<gradient:#FFFFFF:#7A7A7A>GLOOM</gradient> &#FFFFFFКоманды:'
+  format: '&#FFFFFF/{command} &8- &#999999{description}'
+  footer: '&#999999Справка: &#FFFFFF/gloom help'
+
+status:
+  header: <gradient:#FFFFFF:#7A7A7A>GLOOM</gradient> &#FFFFFFСтатус системы
+  backend: '{prefix} &#777777AI &#FFFFFF{status}'
+  requests_today: '{prefix} &#777777Запросов за день &#FFFFFF{requests_today}'
+  requests_remaining: '{prefix} &#777777Осталось запросов &#FFFFFF{requests_remaining}'
+  checking: '{prefix} &#777777Проверяю подключение к AI...'
+  connected: '&#FFFFFFПодключен'
+  not_connected: '&#FF2B2BНе подключен'
+  no_license: '{prefix} &#FF2B2BAPI-ключ не настроен. &#777777Используйте &#FFFFFF/gloom
+    connect <код>'
+  error: '{prefix} &#FF2B2BНе удалось получить статус: &#FFFFFF{error}'
+  unlimited: '&#FFFFFFБезлимитно'
+  model: '{prefix} &7Активная модель: <gradient:#FFFFFF:#AAAAAA>{model}</gradient>'
+  plan: '{prefix} &7Тариф: <gradient:#FFFFFF:#AAAAAA>{plan}</gradient>'
 
 connect:
-  status_missing: '{prefix} &eAPI-ключ не задан. Получите код на gloomai.pro.'
-  status_saved: '{prefix} &aAPI-ключ сохранён. Доступ к API проверяется при анализе игроков.'
-  usage: '{prefix} &eИспользование: /gloom connect <код или API-ключ> | status'
-  invalid_panel_url: '{prefix} &cУкажите корректный HTTPS-адрес ml_check.panel_url.'
-  already_connecting: '{prefix} &eПодключение уже выполняется.'
-  connecting: '{prefix} &eПодключаю сервер к кабинету...'
-  network_error: '{prefix} &cНе удалось связаться с сайтом. Повторите подключение позже.'
-  rate_limited: '{prefix} &cСлишком много попыток. Подождите 15 минут.'
-  rejected: '{prefix} &cКлюч или код недействителен, IP не разрешён или достигнут лимит IP. Проверьте кабинет.'
-  success: '{prefix} &aСервер подключён. API-ключ сохранён, перезапуск не требуется.'
-  save_error: '{prefix} &cНе удалось сохранить конфиг. Проверьте права на checks.yml и создайте новый код.'
-  invalid_response: '{prefix} &cСайт вернул некорректный ответ. Создайте новый код и повторите попытку.'
+  status_missing: '{prefix} &#FF2B2BAPI-ключ не задан. &#777777Получите код на &#FFFFFFgloomai.pro'
+  status_saved: '{prefix} &#FFFFFFAPI-ключ сохранён. &#777777Доступ проверяется при
+    анализе игроков.'
+  usage: '{prefix} &#999999Использование: &#FFFFFF/gloom connect <код или API-ключ>
+    &#999999или &#FFFFFF/gloom connect status'
+  invalid_panel_url: '{prefix} &#FF2B2BУкажите корректный HTTPS-адрес ml_check.panel_url'
+  already_connecting: '{prefix} &#FFE500Подключение уже выполняется...'
+  connecting: '{prefix} &#777777Подключаю сервер к кабинету...'
+  network_error: '{prefix} &#FF2B2BНе удалось связаться с сайтом. Повторите подключение
+    позже.'
+  rate_limited: '{prefix} &#FFE500Слишком много попыток. Подождите 15 минут.'
+  rejected: '{prefix} &#FF2B2BКлюч или код недействителен, IP не разрешён или достигнут
+    лимит IP. Проверьте кабинет.'
+  success: '{prefix} &#FFFFFFСервер успешно подключён. &#777777API-ключ сохранён,
+    перезапуск не требуется.'
+  save_error: '{prefix} &#FF2B2BНе удалось сохранить конфиг. Проверьте права на checks.yml
+    и создайте новый код.'
+  invalid_response: '{prefix} &#FF2B2BСайт вернул некорректный ответ. Создайте новый
+    код и повторите попытку.'
 
 monitor:
   action_bar:
-    format: "{probability_color}&l{probability}% &8• {trend} &8• &#F6D443{buffer}"
-    waiting: "&#93FFD7&lAI &#F3F3F3{player} &8• &#CDCDCDожидание результата анализа..."
+    format: '&#FFFFFF{probability}%  &#777777{trend}  &#FFFFFF{buffer}'
+    waiting: <gradient:#FFFFFF:#7A7A7A>GLOOM</gradient> &#FFFFFF{player} &#777777ожидание
+      анализа...
 
     trend:
-      up: "&#F65943{value}"
-      down: "&#95F643{value}"
-      equal: "&#95F6430.00"
+      up: '&#FFE500+{value}'
+      down: '&#FFE500{value}'
+      equal: '&#7777770.00'
 
-  only_player: "{prefix} &#F3F3F3Эту команду может выполнить только игрок."
-  enabled: "{prefix} &#F3F3F3Монитор запущен для &#CDCDCD{player}&f."
-  disabled: "{prefix} &#F3F3F3Монитор &#F65943отключен&#F3F3F3."
-  not_running: "{prefix} &#F3F3F3Монитор сейчас не запущен."
-  switched: "{prefix} &#F3F3F3Цель монитора изменена на &#CDCDCD{player}&f."
-  player_not_found: "{prefix} &#F3F3F3Игрок не найден."
-  target_left: "{prefix} &#F3F3F3Монитор остановлен: игрок &#CDCDCD{player} &#F3F3F3вышел с сервера."
+  only_player: '{prefix} &#FF2B2BЭту команду может выполнить только игрок'
+  enabled: '{prefix} &#FFFFFFМонитор запущен для {player}'
+  disabled: '{prefix} &#FF2B2BМонитор выключен'
+  not_running: '{prefix} &#FF2B2BМонитор сейчас не запущен'
+  switched: '{prefix} &#FFFFFFЦель монитора: {player}'
+  player_not_found: '{prefix} &#FF2B2BИгрок не найден'
+  target_left: '{prefix} &#FF2B2BМонитор остановлен. &#FFFFFF{player} &#777777вышел
+    с сервера'

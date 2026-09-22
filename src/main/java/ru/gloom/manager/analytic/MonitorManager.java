@@ -15,6 +15,7 @@ import ru.gloom.api.model.monitor.AiSnapshot;
 import ru.gloom.api.model.monitor.MonitorSession;
 import ru.gloom.api.model.monitor.ToggleResult;
 import ru.gloom.config.MainConfigManager;
+import ru.gloom.utils.MessageUtils;
 
 @RequiredArgsConstructor
 public final class MonitorManager {
@@ -140,7 +141,7 @@ public final class MonitorManager {
             if (target == null || !target.isOnline()) {
                 iterator.remove();
                 snapshots.remove(session.getTargetId());
-                viewer.sendMessage(replacePlayer(config.getMonitorTargetLeftMessage(), session.getTargetName()));
+                MessageUtils.send(viewer, replacePlayer(config.getMonitorTargetLeftMessage(), session.getTargetName()));
                 continue;
             }
 
@@ -149,7 +150,7 @@ public final class MonitorManager {
                 continue;
             }
 
-            viewer.sendActionBar(actionBar);
+            MessageUtils.sendActionBar(viewer, actionBar);
             session.markSent(actionBar, currentTick);
         }
 
