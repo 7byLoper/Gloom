@@ -4,6 +4,7 @@ import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 import ru.gloom.api.command.register.CommandRegister;
 import ru.gloom.command.commands.gloom.subcommands.*;
+import ru.gloom.command.commands.gloom.subcommands.admin.*;
 import ru.gloom.command.handler.BaseCommandExecutor;
 
 @CommandRegister(name = "gloom", permission = "gloom.command.use")

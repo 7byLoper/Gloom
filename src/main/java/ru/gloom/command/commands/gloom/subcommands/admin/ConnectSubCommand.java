@@ -1,4 +1,4 @@
-package ru.gloom.command.commands.gloom.subcommands;
+package ru.gloom.command.commands.gloom.subcommands.admin;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;

@@ -1,4 +1,4 @@
-package ru.gloom.command.commands.gloom.subcommands;
+package ru.gloom.command.commands.gloom.subcommands.admin;
 
 import java.util.Collections;
 import java.util.List;

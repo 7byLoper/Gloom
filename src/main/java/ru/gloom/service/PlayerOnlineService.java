@@ -11,23 +11,19 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import lombok.Data;
 import ru.gloom.GloomAI;
 import ru.gloom.api.redis.RedisManager;
 
 public class PlayerOnlineService {
-
     private static final String ONLINE_PLAYERS_KEY = "online:players";
     private static final String ONLINE_SERVERS_KEY = "online:servers";
 
     private final RedisManager redisManager;
     private final long onlineTimeoutMillis;
     private final long playerHashTtlSeconds;
-
-    private final Map<String, PlayerOnlineInfo> localOnline = new ConcurrentHashMap<>();
+    private final LocalOnlineCache localCache = new LocalOnlineCache();
 
     public PlayerOnlineService(RedisManager redisManager) {
         this(redisManager, 60_000L);
@@ -37,8 +33,7 @@ public class PlayerOnlineService {
         this.redisManager = redisManager;
         this.onlineTimeoutMillis = onlineTimeoutMillis;
 
-        long timeoutSeconds = TimeUnit.MILLISECONDS.toSeconds(onlineTimeoutMillis);
-        this.playerHashTtlSeconds = Math.max(1L, timeoutSeconds + 10L);
+        this.playerHashTtlSeconds = Math.max(1L, TimeUnit.MILLISECONDS.toSeconds(onlineTimeoutMillis) + 10L);
     }
 
     public void heartbeat(UUID uuid, String nickname) {
@@ -53,13 +48,12 @@ public class PlayerOnlineService {
         long now = System.currentTimeMillis();
 
         if (!isRedisAvailable()) {
-            localHeartbeat(uuid, nickname, anarchyId, now);
+            localCache.heartbeat(uuid, nickname, anarchyId, now);
             return;
         }
 
         try {
             RedisCommands<String, String> redis = commands();
-
             String playerKey = playerKey(uuid);
 
             String oldAnarchyId = redis.hget(playerKey, "anarchy");
@@ -79,10 +73,9 @@ public class PlayerOnlineService {
 
             redis.hset(playerKey, data);
             redis.expire(playerKey, playerHashTtlSeconds);
-
             redis.sadd(ONLINE_SERVERS_KEY, anarchyId);
         } catch (RedisException exception) {
-            localHeartbeat(uuid, nickname, anarchyId, now);
+            localCache.heartbeat(uuid, nickname, anarchyId, now);
         }
     }
 
@@ -92,18 +85,16 @@ public class PlayerOnlineService {
 
     public void quit(String uuid) {
         if (!isRedisAvailable()) {
-            localOnline.remove(uuid);
+            localCache.remove(uuid);
             return;
         }
 
         try {
             RedisCommands<String, String> redis = commands();
-
             String playerKey = playerKey(uuid);
             String anarchyId = redis.hget(playerKey, "anarchy");
 
             redis.zrem(ONLINE_PLAYERS_KEY, uuid);
-
             if (anarchyId != null) {
                 redis.zrem(anarchyPlayersKey(anarchyId), uuid);
                 cleanupServer(anarchyId);
@@ -111,7 +102,7 @@ public class PlayerOnlineService {
 
             redis.del(playerKey);
         } catch (RedisException exception) {
-            localOnline.remove(uuid);
+            localCache.remove(uuid);
         }
     }
 
@@ -126,20 +117,18 @@ public class PlayerOnlineService {
         }
 
         if (!isRedisAvailable()) {
-            localOnline.remove(uuid);
+            localCache.remove(uuid);
             return;
         }
 
         try {
             RedisCommands<String, String> redis = commands();
-
             redis.zrem(ONLINE_PLAYERS_KEY, uuid);
             redis.zrem(anarchyPlayersKey(anarchyId), uuid);
             redis.del(playerKey(uuid));
-
             cleanupServer(anarchyId);
         } catch (RedisException exception) {
-            localOnline.remove(uuid);
+            localCache.remove(uuid);
         }
     }
 
@@ -151,14 +140,11 @@ public class PlayerOnlineService {
         long cutoff = System.currentTimeMillis() - onlineTimeoutMillis;
 
         if (!isRedisAvailable()) {
-            cleanupLocal();
-            PlayerOnlineInfo info = localOnline.get(uuid);
-            return info != null && info.getLastSeen() >= cutoff;
+            return localCache.isOnline(uuid, cutoff);
         }
 
         try {
             RedisCommands<String, String> redis = commands();
-
             Double lastSeen = redis.zscore(ONLINE_PLAYERS_KEY, uuid);
             if (lastSeen == null) {
                 return false;
@@ -171,8 +157,7 @@ public class PlayerOnlineService {
 
             return true;
         } catch (RedisException exception) {
-            cleanupLocal();
-            return localOnline.containsKey(uuid);
+            return localCache.isOnline(uuid, cutoff);
         }
     }
 
@@ -184,30 +169,25 @@ public class PlayerOnlineService {
         long cutoff = System.currentTimeMillis() - onlineTimeoutMillis;
 
         if (!isRedisAvailable()) {
-            cleanupLocal();
-            PlayerOnlineInfo info = localOnline.get(uuid);
-            return Optional.ofNullable(info);
+            return localCache.getOnlineInfo(uuid, cutoff);
         }
 
         try {
             RedisCommands<String, String> redis = commands();
-
             Map<String, String> data = redis.hgetall(playerKey(uuid));
             if (data == null || data.isEmpty()) {
                 return Optional.empty();
             }
 
-            PlayerOnlineInfo info = fromRedisHash(data);
-
-            if (info.getLastSeen() < cutoff) {
+            PlayerOnlineInfo info = PlayerOnlineInfo.fromMap(data);
+            if (info.lastSeen() < cutoff) {
                 quit(uuid);
                 return Optional.empty();
             }
 
             return Optional.of(info);
         } catch (RedisException exception) {
-            cleanupLocal();
-            return Optional.ofNullable(localOnline.get(uuid));
+            return localCache.getOnlineInfo(uuid, cutoff);
         }
     }
 
@@ -215,36 +195,30 @@ public class PlayerOnlineService {
         cleanup();
 
         if (!isRedisAvailable()) {
-            return localOnline.size();
+            return localCache.getOnlineCount(System.currentTimeMillis() - onlineTimeoutMillis);
         }
 
         try {
             Long count = commands().zcard(ONLINE_PLAYERS_KEY);
             return count == null ? 0L : count;
         } catch (RedisException exception) {
-            cleanupLocal();
-            return localOnline.size();
+            return localCache.getOnlineCount(System.currentTimeMillis() - onlineTimeoutMillis);
         }
     }
 
     public long getOnlineOnServer(String serverId) {
         cleanupServer(serverId);
+        long cutoff = System.currentTimeMillis() - onlineTimeoutMillis;
 
         if (!isRedisAvailable()) {
-            cleanupLocal();
-            return localOnline.values().stream()
-                    .filter(info -> serverId.equals(info.getServerId()))
-                    .count();
+            return localCache.getServerOnlineCount(serverId, cutoff);
         }
 
         try {
             Long count = commands().zcard(anarchyPlayersKey(serverId));
             return count == null ? 0L : count;
         } catch (RedisException exception) {
-            cleanupLocal();
-            return localOnline.values().stream()
-                    .filter(info -> serverId.equals(info.getServerId()))
-                    .count();
+            return localCache.getServerOnlineCount(serverId, cutoff);
         }
     }
 
@@ -252,22 +226,17 @@ public class PlayerOnlineService {
         cleanup();
 
         if (!isRedisAvailable()) {
-            cleanupLocal();
-            return localOnline.values().stream()
-                    .map(PlayerOnlineInfo::getNickname)
-                    .filter(nickname -> nickname != null && !nickname.isEmpty())
-                    .collect(Collectors.toCollection(LinkedHashSet::new));
+            long cutoff = System.currentTimeMillis() - onlineTimeoutMillis;
+            return localCache.getOnlinePlayers(cutoff);
         }
 
         try {
             RedisCommands<String, String> redis = commands();
-
             List<String> uuids = redis.zrange(ONLINE_PLAYERS_KEY, 0, -1);
             Set<String> nicknames = new LinkedHashSet<>();
 
             for (String uuid : uuids) {
                 String nickname = redis.hget(playerKey(uuid), "nickname");
-
                 if (nickname != null && !nickname.isEmpty()) {
                     nicknames.add(nickname);
                 }
@@ -275,55 +244,40 @@ public class PlayerOnlineService {
 
             return nicknames;
         } catch (RedisException exception) {
-            cleanupLocal();
-            return localOnline.values().stream()
-                    .map(PlayerOnlineInfo::getNickname)
-                    .filter(nickname -> nickname != null && !nickname.isEmpty())
-                    .collect(Collectors.toCollection(LinkedHashSet::new));
+            long cutoff = System.currentTimeMillis() - onlineTimeoutMillis;
+            return localCache.getOnlinePlayers(cutoff);
         }
     }
 
     public Set<String> getOnlinePlayersOnAnarchy(String anarchyId) {
         cleanupServer(anarchyId);
+        long cutoff = System.currentTimeMillis() - onlineTimeoutMillis;
 
         if (!isRedisAvailable()) {
-            cleanupLocal();
-            return localOnline.values().stream()
-                    .filter(info -> anarchyId.equals(info.getServerId()))
-                    .map(PlayerOnlineInfo::getUuid)
-                    .collect(Collectors.toCollection(LinkedHashSet::new));
+            return localCache.getOnlinePlayersByServer(anarchyId, cutoff);
         }
 
         try {
             List<String> players = commands().zrange(anarchyPlayersKey(anarchyId), 0, -1);
             return new LinkedHashSet<>(players);
         } catch (RedisException exception) {
-            cleanupLocal();
-            return localOnline.values().stream()
-                    .filter(info -> anarchyId.equals(info.getServerId()))
-                    .map(PlayerOnlineInfo::getUuid)
-                    .collect(Collectors.toCollection(LinkedHashSet::new));
+            return localCache.getOnlinePlayersByServer(anarchyId, cutoff);
         }
     }
 
     public Set<String> getOnlineServers() {
         cleanup();
+        long cutoff = System.currentTimeMillis() - onlineTimeoutMillis;
 
         if (!isRedisAvailable()) {
-            cleanupLocal();
-            return localOnline.values().stream()
-                    .map(PlayerOnlineInfo::getServerId)
-                    .collect(Collectors.toSet());
+            return localCache.getOnlineServers(cutoff);
         }
 
         try {
             Set<String> servers = commands().smembers(ONLINE_SERVERS_KEY);
             return servers == null ? Collections.emptySet() : servers;
         } catch (RedisException exception) {
-            cleanupLocal();
-            return localOnline.values().stream()
-                    .map(PlayerOnlineInfo::getServerId)
-                    .collect(Collectors.toSet());
+            return localCache.getOnlineServers(cutoff);
         }
     }
 
@@ -331,13 +285,12 @@ public class PlayerOnlineService {
         long cutoff = System.currentTimeMillis() - onlineTimeoutMillis;
 
         if (!isRedisAvailable()) {
-            cleanupLocal();
+            localCache.cleanup(cutoff);
             return;
         }
 
         try {
             RedisCommands<String, String> redis = commands();
-
             redis.zremrangebyscore(ONLINE_PLAYERS_KEY, "-inf", String.valueOf(cutoff));
 
             Set<String> servers = redis.smembers(ONLINE_SERVERS_KEY);
@@ -349,7 +302,7 @@ public class PlayerOnlineService {
                 cleanupServer(anarchyId);
             }
         } catch (RedisException exception) {
-            cleanupLocal();
+            localCache.cleanup(cutoff);
         }
     }
 
@@ -361,7 +314,7 @@ public class PlayerOnlineService {
         long cutoff = System.currentTimeMillis() - onlineTimeoutMillis;
 
         if (!isRedisAvailable()) {
-            cleanupLocal();
+            localCache.cleanup(cutoff);
             return;
         }
 
@@ -370,24 +323,14 @@ public class PlayerOnlineService {
             String key = anarchyPlayersKey(anarchyId);
 
             redis.zremrangebyscore(key, "-inf", String.valueOf(cutoff));
-
             Long count = redis.zcard(key);
             if (count == null || count <= 0L) {
                 redis.del(key);
                 redis.srem(ONLINE_SERVERS_KEY, anarchyId);
             }
         } catch (RedisException ignored) {
-            cleanupLocal();
+            localCache.cleanup(cutoff);
         }
-    }
-
-    private void localHeartbeat(String uuid, String nickname, String anarchyId, long now) {
-        localOnline.put(uuid, new PlayerOnlineInfo(uuid, nickname == null ? "" : nickname, anarchyId, now));
-    }
-
-    private void cleanupLocal() {
-        long cutoff = System.currentTimeMillis() - onlineTimeoutMillis;
-        localOnline.entrySet().removeIf(entry -> entry.getValue().getLastSeen() < cutoff);
     }
 
     private boolean isRedisAvailable() {
@@ -398,34 +341,7 @@ public class PlayerOnlineService {
         return redisManager.getConnection().sync();
     }
 
-    private String playerKey(String uuid) {
-        return "player:" + uuid + ":online";
-    }
+    private static String playerKey(String uuid) { return "player:" + uuid + ":online"; }
 
-    private String anarchyPlayersKey(String anarchyId) {
-        return "online:anarchy:" + anarchyId + ":players";
-    }
-
-    private PlayerOnlineInfo fromRedisHash(Map<String, String> data) {
-        String uuid = data.getOrDefault("uuid", "");
-        String nickname = data.getOrDefault("nickname", "");
-        String anarchyId = data.getOrDefault("anarchy", "");
-
-        long lastSeen;
-        try {
-            lastSeen = Long.parseLong(data.getOrDefault("lastSeen", "0"));
-        } catch (NumberFormatException exception) {
-            lastSeen = 0L;
-        }
-
-        return new PlayerOnlineInfo(uuid, nickname, anarchyId, lastSeen);
-    }
-
-    @Data
-    public static final class PlayerOnlineInfo {
-        private final String uuid;
-        private final String nickname;
-        private final String serverId;
-        private final long lastSeen;
-    }
+    private static String anarchyPlayersKey(String anarchyId) { return "online:anarchy:" + anarchyId + ":players"; }
 }

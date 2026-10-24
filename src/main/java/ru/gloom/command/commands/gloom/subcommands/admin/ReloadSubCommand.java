@@ -1,4 +1,4 @@
-package ru.gloom.command.commands.gloom.subcommands;
+package ru.gloom.command.commands.gloom.subcommands.admin;
 
 import java.util.List;
 import org.bukkit.command.CommandSender;
