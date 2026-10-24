@@ -1,0 +1,68 @@
+prefix: '<gradient:#A855F7:#C084FC:&l>GLOOM</gradient> &#78658F»&#FFFFFF'
+
+alerts-enabled: '{prefix} Оповещения &#7BE3ADвключены'
+alerts-disabled: '{prefix} Оповещения &#FF758Fвыключены'
+verbose-enabled: '{prefix} Подробный вывод &#7BE3ADвключён'
+verbose-disabled: '{prefix} Подробный вывод &#FF758Fвыключен'
+verbose-test-mode-only: '{prefix} Подробный вывод доступен в &#C084FCтестовом режиме'
+holograms-enabled: '{prefix} Голограммы &#7BE3ADвключены'
+holograms-disabled: '{prefix} Голограммы &#FF758Fвыключены'
+
+alert: '{prefix} &#C084FC{model} &#78658F│ &#FFFFFF{player} &#78658F│ &#FFFFFF{probability} &#78658F[&#FFFFFF{buffer}&#78658F] &#B9ACC9×&#FFFFFF{vl}'
+verbose: '{prefix} &#C084FC{model} &#78658F│ &#FFFFFF{player} &#78658F│ &#FFFFFF{probability} &#78658F← &#FFFFFF{previous_probability} &#78658F[&#FFFFFF{buffer}&#78658F]'
+
+history-header: '{prefix} История &#C084FC{player} &#78658F│ &#B9ACC9{page}/{max_pages}'
+history-entry: '{prefix} &#B9ACC9{server} &#78658F│ &#FFFFFF{check_name} &#FF758Fx{vl} &#B9ACC9{verbose} &#78658F│ &#B9ACC9{time_ago} назад'
+history-only-player: '{prefix} Меню истории доступно только &#FF758Fигроку'
+history-no-data: '{prefix} Для &#C084FC{player} &#FFFFFFпока нет истории'
+reloading: '{prefix} Перезагрузка конфигурации&#C084FC…'
+reloaded: '{prefix} Конфигурация &#7BE3ADперезагружена'
+
+help:
+  header: '{prefix} Команды'
+  format: '  &#C084FC/{command} &#78658F› &#FFFFFF{description}'
+  footer: '  &#B9ACC9Справка &#78658F› &#FFFFFF/gloom help'
+
+status:
+  header: '{prefix} Статус системы'
+  backend: '{prefix} &#B9ACC9AI &#78658F› &#FFFFFF{status}'
+  requests_today: '{prefix} &#B9ACC9Запросов за день &#78658F› &#FFFFFF{requests_today}'
+  requests_remaining: '{prefix} &#B9ACC9Осталось запросов &#78658F› &#FFFFFF{requests_remaining}'
+  checking: '{prefix} Проверяю подключение к AI&#C084FC…'
+  connected: '&#7BE3ADПодключён'
+  not_connected: '&#FF758FНе подключён'
+  no_license: '{prefix} API-ключ &#FF758Fне настроен&#FFFFFF. Используйте &#C084FC/gloom connect <код>'
+  error: '{prefix} &#FF758FНе удалось получить статус&#FFFFFF: {error}'
+  unlimited: '&#FFFFFFБезлимитно'
+  model: '{prefix} &#B9ACC9Активная модель &#78658F› &#FFFFFF{model}'
+  plan: '{prefix} &#B9ACC9Тариф &#78658F› &#FFFFFF{plan}'
+
+connect:
+  status_missing: '{prefix} API-ключ &#FF758Fне задан&#FFFFFF. Получите код на &#C084FCgloomai.pro'
+  status_saved: '{prefix} API-ключ &#7BE3ADсохранён&#FFFFFF. Доступ проверяется при анализе игроков.'
+  usage: '{prefix} &#B9ACC9Использование &#78658F› &#FFFFFF/gloom connect <код или API-ключ> &#B9ACC9или &#FFFFFF/gloom connect status'
+  invalid_panel_url: '{prefix} Укажите корректный &#FF758FHTTPS-адрес &#FFFFFFml_check.panel_url'
+  already_connecting: '{prefix} Подключение уже выполняется&#C084FC…'
+  connecting: '{prefix} Подключаю сервер к кабинету&#C084FC…'
+  network_error: '{prefix} &#FF758FНе удалось связаться с сайтом&#FFFFFF. Повторите подключение позже.'
+  rate_limited: '{prefix} &#FFD28AСлишком много попыток&#FFFFFF. Подождите 15 минут.'
+  rejected: '{prefix} &#FF758FПодключение отклонено&#FFFFFF. Проверьте ключ или код, разрешённые IP и лимит адресов в кабинете.'
+  success: '{prefix} Сервер &#7BE3ADподключён&#FFFFFF. API-ключ сохранён, перезапуск не требуется.'
+  save_error: '{prefix} &#FF758FНе удалось сохранить конфиг&#FFFFFF. Проверьте права на checks.yml и создайте новый код.'
+  invalid_response: '{prefix} Сайт вернул &#FF758Fнекорректный ответ&#FFFFFF. Создайте новый код и повторите попытку.'
+
+monitor:
+  action_bar:
+    format: '&#FFFFFF{probability}%  &#78658F│  {trend}  &#78658F│  &#B9ACC9buffer &#FFFFFF{buffer}'
+    waiting: '<gradient:#A855F7:#C084FC:&l>GLOOM</gradient> &#78658F» &#FFFFFF{player} &#B9ACC9ожидание анализа…'
+    trend:
+      up: '&#FFD28A+{value}'
+      down: '&#7BE3AD{value}'
+      equal: '&#B9ACC90.00'
+  only_player: '{prefix} Эту команду может выполнить только &#FF758Fигрок'
+  enabled: '{prefix} Монитор &#7BE3ADзапущен &#FFFFFFдля &#C084FC{player}'
+  disabled: '{prefix} Монитор &#FF758Fвыключен'
+  not_running: '{prefix} Монитор сейчас &#B9ACC9не запущен'
+  switched: '{prefix} Цель монитора &#78658F› &#C084FC{player}'
+  player_not_found: '{prefix} Игрок &#FF758Fне найден'
+  target_left: '{prefix} Монитор остановлен: &#C084FC{player} &#FFFFFFвышел с сервера'

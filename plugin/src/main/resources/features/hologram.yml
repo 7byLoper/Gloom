@@ -1,0 +1,33 @@
+# Enable holograms?
+enable: true
+# ARMORSTAND или TEXTDISPLAY (сервер и клиент 1.19.4+, иначе ARMORSTAND).
+type: ARMORSTAND
+line_spacing: 0.28
+offset: 3.9
+history_lines: 2
+history_probs_per_line: 5
+lines: # {history} для копии HolyWorld
+  - '{avg_color}{avg} &#777777buffer &#FFFFFF{buffer}'
+
+textdisplay:
+  # Поворот к камере по горизонтали и вертикали независимо друг от друга.
+  rotate-horizontal: true
+  rotate-vertical: true
+  yaw: 0
+  pitch: 0
+  # Смещение над точкой крепления пассажира; offset выше относится к ArmorStand.
+  passenger-offset: 2.1
+  scale: 1.0
+  line-width: 400
+  opacity: 255
+  alignment: CENTER # LEFT / CENTER / RIGHT
+  shadow: true
+  see-through: false
+  view-range: 1.0
+  background:
+    enabled: false
+    use-default: false
+    color: '#40000000' # alpha, red, green, blue
+  brightness:
+    block: -1 # оба -1 = освещение мира, иначе оба 0..15
+    sky: -1

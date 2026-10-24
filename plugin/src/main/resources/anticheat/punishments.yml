@@ -1,0 +1,18 @@
+damage-reduction:
+  step-percent: 10
+  max-percent: 50
+  duration-seconds: 60 # после последнего action; затем сброс, также при выходе/reload
+  projectiles: false # урезать также урон стрел/трезубцев; только PvP
+
+rotation_aim:
+  checks:
+    - "RotationAimCheck"
+  remove-violations-after: 300
+
+  commands:
+    - "1:1 [alert]"
+    - "2:2 [log]"
+    # 6, 12, 18, 24, 30 флагов: +step-percent, максимум max-percent.
+    # Для включения уберите # и перенесите/уберите бан ниже, иначе он сработает раньше.
+    # - "6:6 [reduce-damage]"
+    - "5:0 ban {player} Система Gloom заметила ваше нестандартное поведение" # {probability} - вероятность в формате 0.0000

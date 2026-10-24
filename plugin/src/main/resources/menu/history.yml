@@ -1,4 +1,4 @@
-title: '&8История {player_name}'
+title: '<gradient:#A855F7:#C084FC>GLOOM</gradient> &#FFFFFFИстория {player_name}'
 size: 54
 
 decoration:
@@ -9,14 +9,14 @@ settings:
 
   snapshot_form:
     material: GREEN_STAINED_GLASS_PANE
-    display_name: '&fAVG: {snapshot_avg}'
+    display_name: '&#C084FCAVG: &#FFFFFF{snapshot_avg}'
     lore:
       - ''
-      - '&7Вер.        &8&l| &7Сервер        &0.&8&l| &7Время'
-      - '&8-------------------------------------'
+      - '&#FFFFFFВер.        &#78658F│ &#FFFFFFСервер        &#78658F│ &#FFFFFFВремя'
+      - '&#78658F-------------------------------------'
       - '{entries}'
 
-  entry_format: '{chance}     &8&l| &f{server}     &8&l| &f{time}  '
+  entry_format: '{chance}     &#78658F│ &#FFFFFF{server}     &#78658F│ &#FFFFFF{time}  '
   empty_entries_message: '&7Нет записей'
   empty_server_value: '—'
 
@@ -30,11 +30,11 @@ items:
   previous-item:
     material: ARROW
     action: 'previous_page'
-    display_name: '&#36cbe9◀ &#F3F3F3Предыдущая страница'
+    display_name: '&#C084FC◀ &#FFFFFFПредыдущая страница'
     slot: 47
 
   next-item:
     material: ARROW
     action: 'next_page'
-    display_name: '&#F3F3F3Следующая страница &#36cbe9▶'
+    display_name: '&#FFFFFFСледующая страница &#C084FC▶'
     slot: 51

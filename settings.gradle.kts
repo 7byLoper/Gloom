@@ -1,4 +1,5 @@
 rootProject.name = "Gloom"
+include("common", "plugin", "compatibility:legacy", "compatibility:display")
 
 dependencyResolutionManagement {
     versionCatalogs {
